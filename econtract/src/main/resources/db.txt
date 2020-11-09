@@ -1,31 +1,20 @@
 CREATE TABLE ADMIN."USER" 
     ( 
-     USERID    VARCHAR2 (20) , 
-     PASSWORD  VARCHAR2 (20) , 
-     NAME      VARCHAR2 (20) , 
-     EMAIL     VARCHAR2 (20) , 
-     COMPANYID VARCHAR2 (20) 
-    ) 
-    TABLESPACE DATA 
-    LOGGING 
-;
+     USERID    VARCHAR2 (20) not null primary key, 
+     PASSWORD  VARCHAR2 (20) not null, 
+     NAME      VARCHAR2 (20) not null, 
+     EMAIL     VARCHAR2 (20) not null, 
+     COMPANYID VARCHAR2 (20) not null
+    );
 
 
-CREATE UNIQUE INDEX ADMIN.USER_PK ON ADMIN."USER" 
-    ( 
-     USERID ASC 
-    ) 
-    TABLESPACE DATA 
-    LOGGING 
-;
 
-ALTER TABLE ADMIN."USER" 
-    ADD CONSTRAINT USER_PK PRIMARY KEY ( USERID ) 
-    USING INDEX ADMIN.USER_PK ;
-    
+insert into "ADMIN"."USER" (userid, password, name, email, companyid)
+values ('user1', '1234', '오라클', 'eot@oracle.com' ,'company1');
 ---
  
  
  
+create table "user" (userid varchar2(255 char) not null, companyid varchar2(255 char), email varchar2(255 char), name varchar2(255 char), password varchar2(255 char), primary key (userid))
 
  

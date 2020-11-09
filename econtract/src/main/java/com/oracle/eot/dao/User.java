@@ -1,4 +1,4 @@
-package com.oracle.eot;
+package com.oracle.eot.dao;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

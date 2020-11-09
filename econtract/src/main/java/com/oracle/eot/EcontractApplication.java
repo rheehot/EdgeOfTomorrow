@@ -8,7 +8,7 @@ public class EcontractApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(EcontractApplication.class, args);
-		System.out.println("Ready..");
+		System.out.println("## Ready..");
 	}
 
 }
