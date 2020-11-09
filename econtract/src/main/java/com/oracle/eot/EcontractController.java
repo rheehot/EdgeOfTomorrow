@@ -19,19 +19,22 @@ public class EcontractController {
 
 	@RequestMapping("/greeting")
 	public Greeting greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
-		// User user = new User();
-		// user.setUserid("user1");
-		// user.setCompanyid("company1");
-
-		String userid = "user1";
-
-		Optional<User> customerList = userRepository.findById(userid);
 		return new Greeting(counter.incrementAndGet(), String.format(template, name));
 	}
 
 	@RequestMapping("/login")
-	public boolean login(@RequestParam String userid, @RequestParam String password, @RequestParam String companyid) {
+	public User login(@RequestParam String userid, @RequestParam String password, @RequestParam String companyid) {
+//		 User user = new User();
+//		 user.setUserid("user1");
+//		 user.setCompanyid("company1");
 
-		return false;
+		Optional<User> user = userRepository.findById("user1");
+
+        if(!user.isPresent()) {
+        	System.out.println(" no user1");
+            throw new IllegalArgumentException();
+        }
+        
+		return user.get();
 	}
 }
