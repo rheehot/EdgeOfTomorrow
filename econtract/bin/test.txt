@@ -1,0 +1,27 @@
+User
+---------------
+1. 정상 로그인
+http://localhost:8080/login?userid=user1&password=1234&companyid=123
+{"userid":"user1","password":"1234","email":"eot@oracle.com","name":"오라클","companyid":"company1"}
+
+2. 없는 사용자
+http://localhost:8080/login?userid=user2&password=1234&companyid=123
+{"code":9001,"message":"user2 is not exist"}
+
+3. 패스워드 틀림
+http://localhost:8080/login?userid=user1&password=1111&companyid=123
+{"code":9002,"message":"Password Incorrect"}
+---------------
+
+
+Master
+---------------
+---------------
+
+History
+---------------
+---------------
+
+
+---------------
+---------------

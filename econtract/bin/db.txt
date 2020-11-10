@@ -1,4 +1,4 @@
-CREATE TABLE ADMIN."user" 
+CREATE TABLE ADMIN."USER" 
     ( 
      USERID    VARCHAR2 (20) not null primary key, 
      PASSWORD  VARCHAR2 (20) not null, 
@@ -9,10 +9,8 @@ CREATE TABLE ADMIN."user"
 
 
 
-insert into ADMIN."user" (userid, password, name, email, companyid)
-values ('user1', '$2a$10$cYdFZoku5bOUGwYEL.Tk5e6fFjf1V0SQj5v98OdeO8UFPWI5pVK4y', '오라클', 'eot@oracle.com' ,'company1');
-
-delete from ADMIN."user" where userid = 'user1'
+insert into "ADMIN"."USER" (userid, password, name, email, companyid)
+values ('user1', '1234', '오라클', 'eot@oracle.com' ,'company1');
 ---
  
  

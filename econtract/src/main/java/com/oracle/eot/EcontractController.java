@@ -1,13 +1,12 @@
 package com.oracle.eot;
 
+import java.security.Principal;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.oracle.eot.dao.User;
@@ -29,20 +28,14 @@ public class EcontractController {
 	}
 
 	@RequestMapping("/login")
-	public User login(@RequestParam String userid, @RequestParam String password, @RequestParam String companyid) {
+	public User login(Principal principal) {
+		String userid = principal.getName();
 		Optional<User> userOpt = userRepository.findById(userid);
 
-        if(!userOpt.isPresent()) {
-//            throw new IllegalArgumentException();
-        	throw new EotException(9001, userid + " is not exist");
-        }
-        
-        User user = userOpt.get();
-
-        if(!user.getPassword().equals(password)) {
-        	throw new EotException(9002, "Password Incorrect");
-        }
-		return user;
+		if (!userOpt.isPresent()) {
+			throw new EotException(9001, userid + " is not exist");
+		}
+		return userOpt.get();
 	}
-	
+
 }
