@@ -1,15 +1,4 @@
-CREATE TABLE ADMIN."user" 
-    ( 
-     USERID    VARCHAR2 (20) not null primary key, 
-     PASSWORD  VARCHAR2 (20) not null, 
-     NAME      VARCHAR2 (20) not null, 
-     EMAIL     VARCHAR2 (20) not null, 
-     COMPANYID VARCHAR2 (20) not null
-    );
-
-
-
-insert into ADMIN."user" (userid, password, name, email, companyid)
+insert into "user" (userid, password, name, email, companyid)
 values ('user1', '$2a$10$cYdFZoku5bOUGwYEL.Tk5e6fFjf1V0SQj5v98OdeO8UFPWI5pVK4y', '오라클', 'eot@oracle.com' ,'company1');
 
 delete from ADMIN."user" where userid = 'user1'
@@ -17,6 +6,9 @@ delete from ADMIN."user" where userid = 'user1'
  
  
  
+
+----
+create sequence hibernate_sequence start with 1 increment by  1
+create table "master" (cid number(10,0) not null, approvedt date, approve_email varchar2(255 char), approve_hash varchar2(255 char), approve_name varchar2(255 char), approve_path varchar2(255 char), contract_hash varchar2(255 char), contract_path varchar2(255 char), pdf_hash varchar2(255 char), pdf_path varchar2(255 char), pid varchar2(255 char), requestdt date, request_email varchar2(255 char), request_hash varchar2(255 char), request_name varchar2(255 char), request_path varchar2(255 char), txid varchar2(255 char), primary key (cid))
 create table "user" (userid varchar2(255 char) not null, companyid varchar2(255 char), email varchar2(255 char), name varchar2(255 char), password varchar2(255 char), primary key (userid))
 
- 

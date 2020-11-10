@@ -24,9 +24,8 @@ public class User {
 	@Column
 	private String companyid;
 
-	public User() {
-	}
-
+	//-----------
+	
 	public String getUserid() {
 		return userid;
 	}
@@ -66,5 +65,4 @@ public class User {
 	public void setCompanyid(String companyid) {
 		this.companyid = companyid;
 	}
-
 }

@@ -31,6 +31,7 @@ public class EotUserDetailsService implements UserDetailsService {
 //          throw new IllegalArgumentException();
 			throw new EotException(9001, userid + " is not exist");
 		}
+		
 		User user = userOpt.get();
 
 		EotUserDetails userDetails = new EotUserDetails();
