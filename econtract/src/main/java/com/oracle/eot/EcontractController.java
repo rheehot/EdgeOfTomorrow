@@ -156,10 +156,10 @@ public class EcontractController {
 		
 		
 		//7. pdfFile을 ObjectStorage에 저장한다.
-		prefix = Integer.toString(master.getCid())  + "-" + uuid + "-final-";
-		String pdfPath = storageService.store(prefix, pdfFile);
-		master.setPdfPath(pdfPath);
-		System.out.println("setPdfPath-->" + pdfPath);
+//		prefix = Integer.toString(master.getCid())  + "-" + uuid + "-final-";
+//		String pdfPath = storageService.store(prefix, pdfFile);
+//		master.setPdfPath(pdfPath);
+//		System.out.println("setPdfPath-->" + pdfPath);
 		
 		//6. Blockchain에 등록한다. ?????
 //		String txid = null;
