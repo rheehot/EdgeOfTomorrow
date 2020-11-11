@@ -5,6 +5,7 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-@Service
+//@Service
 public class FileSystemStorageService implements StorageService {
 
 	private final Path rootLocation;
@@ -25,12 +26,19 @@ public class FileSystemStorageService implements StorageService {
 	}
 
 	@Override
-	public void store(MultipartFile file) {
+	public String store(MultipartFile file) {
+		return store("", file);
+	}
+	
+	@Override
+	public String store(String prefix, MultipartFile file) {
+		String filename = prefix + file.getOriginalFilename();
 		try {
 			if (file.isEmpty()) {
 				throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
 			}
 			Files.copy(file.getInputStream(), this.rootLocation.resolve(file.getOriginalFilename()));
+			return file.getOriginalFilename();
 		} catch (IOException e) {
 			throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
 		}

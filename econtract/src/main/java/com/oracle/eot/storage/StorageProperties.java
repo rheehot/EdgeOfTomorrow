@@ -5,6 +5,8 @@ import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.http.MediaType;
 
+import com.oracle.bmc.Region;
+
 @ConfigurationProperties("storage")
 public class StorageProperties {
 
@@ -16,13 +18,13 @@ public class StorageProperties {
 	/**
 	 * OCI ObjectStorage 설정
 	 */
-	private String namespaceName = null;
-	private String bucketName = null;
-	private Map<String, String> metadata = null;
+	private Region region = Region.US_ASHBURN_1;
+	private String namespaceName = "id3tdyhkmip4";
+	private String bucketName = "econtract-bucket";
 	private String contentType = MediaType.MULTIPART_FORM_DATA_VALUE;
-	private String contentEncoding = "gzip";
+	private String contentEncoding = null;
 	private String contentLanguage = null;
-	
+	private Map<String, String> metadata = null;	
 	
 	//--------
 	
@@ -32,6 +34,15 @@ public class StorageProperties {
 
 	public void setLocation(String location) {
 		this.location = location;
+	}
+	
+
+	public Region getRegion() {
+		return region;
+	}
+
+	public void setRegion(Region region) {
+		this.region = region;
 	}
 
 	public String getNamespaceName() {

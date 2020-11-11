@@ -163,5 +163,14 @@ public class Master {
 	public void setPdfHash(String pdfHash) {
 		this.pdfHash = pdfHash;
 	}
+	@Override
+	public String toString() {
+		return "Master [cid=" + cid + ", txid=" + txid + ", pid=" + pid + ", requestDT=" + requestDT + ", requestName="
+				+ requestName + ", requestEmail=" + requestEmail + ", approveDT=" + approveDT + ", approveName="
+				+ approveName + ", approveEmail=" + approveEmail + ", contractPath=" + contractPath + ", contractHash="
+				+ contractHash + ", requestPath=" + requestPath + ", requestHash=" + requestHash + ", approvePath="
+				+ approvePath + ", approveHash=" + approveHash + ", pdfPath=" + pdfPath + ", pdfHash=" + pdfHash + "]";
+	}
 
+	
 }
