@@ -24,7 +24,13 @@ public class User {
 	@Column
 	private String companyid;
 
-	//-----------
+
+	
+	public User() {}
+	
+	public User(String userid) {
+		this.userid = userid;
+	}
 	
 	public String getUserid() {
 		return userid;

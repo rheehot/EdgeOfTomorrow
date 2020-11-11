@@ -57,7 +57,11 @@ public class Master {
 	private String pdfHash;
 	
 	
+	public Master() {}
 	
+	public Master(int cid) {
+		this.cid = cid;
+	}
 	
 	//----------------------
 	

@@ -16,7 +16,7 @@
 	<description>E-Contract for MadHack</description>
 
 	<properties>
-		<java.version>11</java.version>
+		<java.version>14</java.version>
 	</properties>
 
 	<dependencyManagement>

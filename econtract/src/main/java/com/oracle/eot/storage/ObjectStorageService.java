@@ -1,6 +1,7 @@
 package com.oracle.eot.storage;
 
-import java.io.InputStream;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.oracle.bmc.ConfigFileReader;
+import com.oracle.bmc.Region;
 import com.oracle.bmc.auth.ConfigFileAuthenticationDetailsProvider;
 import com.oracle.bmc.objectstorage.ObjectStorage;
 import com.oracle.bmc.objectstorage.ObjectStorageClient;
@@ -24,9 +26,10 @@ import com.oracle.bmc.objectstorage.transfer.UploadManager.UploadResponse;
 
 @Service
 public class ObjectStorageService implements StorageService {
-	String configurationFilePath = "oci/config";
+	String configurationFilePath = "./oci/config";
 	String profile = "DEFAULT";
 
+	Region region = null;
 	String namespaceName = null;
 	String bucketName = null;
 	Map<String, String> metadata = null;
@@ -39,6 +42,7 @@ public class ObjectStorageService implements StorageService {
 	@Autowired
 	public ObjectStorageService(StorageProperties properties) {
 		try {
+			this.region = properties.getRegion();
 			this.namespaceName = properties.getNamespaceName();
 			this.bucketName = properties.getBucketName();
 			this.metadata = properties.getMetadata();
@@ -46,10 +50,14 @@ public class ObjectStorageService implements StorageService {
 			this.contentEncoding = properties.getContentEncoding();
 			this.contentLanguage = properties.getContentLanguage();
 
-			ConfigFileReader.ConfigFile configFile = ConfigFileReader.parseDefault();
+//			System.out.println(new File(".").getAbsolutePath());
+//			InputStream configInputStream = this.getClass().getClassLoader().getResourceAsStream(this.configurationFilePath);
+//			ConfigFileReader.ConfigFile configFile = ConfigFileReader.parse(configInputStream, "DEFAULT");
+
+			ConfigFileReader.ConfigFile configFile = ConfigFileReader.parse(this.configurationFilePath);
 			ConfigFileAuthenticationDetailsProvider provider = new ConfigFileAuthenticationDetailsProvider(configFile);
 			client = new ObjectStorageClient(provider);
-			client.setRegion(properties.getRegion());
+			client.setRegion(region);
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new StorageException(e.getMessage(), e);
@@ -89,10 +97,18 @@ public class ObjectStorageService implements StorageService {
 //			UploadRequest uploadDetails = UploadRequest.builder(body).allowOverwrite(true).build(request);
 
 			UploadResponse response = uploadManager.upload(uploadDetails);
-			System.out.println("done." + response);
 
-			return response.toString();
-
+////			https://objectstorage.us-ashburn-1.oraclecloud.com/n/id3tdyhkmip4/b/econtract-bucket/o/2-request%40oracle.comrequest.jpg
+//			String uri = new StringBuilder()
+//				.append(client.getEndpoint())
+//				.append("/n/" + namespaceName)
+//				.append("/b/" + bucketName)
+//				.append("/o/" + URLEncoder.encode(objectName, StandardCharsets.UTF_8)).toString();
+//			
+//			return uri;
+			
+			return objectName;
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
