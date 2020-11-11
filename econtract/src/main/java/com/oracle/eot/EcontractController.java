@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -38,18 +39,16 @@ public class EcontractController {
 
 	@Autowired
 	private MasterRepository masterRepository;
-	
+
 	@Autowired
 	private StorageService storageService;
-	
+
 	@Autowired
 	private PdfConvertService pdfConvertService;
-	
-	
 
 	private static final String template = "Hello, %s!";
 	private final AtomicLong counter = new AtomicLong();
-	
+
 	@GetMapping("/")
 	public Greeting greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
 		System.out.println(storageService);
@@ -68,20 +67,15 @@ public class EcontractController {
 	}
 
 	@PostMapping("/contract")
-	public String requestContract(
-			Principal principal,
-			@RequestPart String pid,
-			@RequestPart String approveName,
-			@RequestPart String approveEmail,
-			@RequestPart MultipartFile contractFile, 
-			@RequestPart MultipartFile requestFile,
-			RedirectAttributes redirectAttribute) {
-		
+	@ResponseBody
+	public String requestContract(Principal principal, @RequestPart String pid, @RequestPart String approveName,
+			@RequestPart String approveEmail, @RequestPart MultipartFile contractFile,
+			@RequestPart MultipartFile requestFile, RedirectAttributes redirectAttribute) {
 
-		//1. 사용자 정보를 가져온다.
+		// 1. 사용자 정보를 가져온다.
 		User user = getUser(principal);
-		
-		//2. Master 레코드를 만든다.
+
+		// 2. Master 레코드를 만든다.
 		Master master = new Master();
 		master.setRequestDT(new Date(System.currentTimeMillis()));
 		master.setPid(pid);
@@ -91,108 +85,106 @@ public class EcontractController {
 		master.setApproveEmail(approveEmail);
 		master = masterRepository.save(master);
 		System.out.println(master);
-	
+
 		UUID uuid = UUID.randomUUID();
 		String prefix = null;
-		
-		//3. contractFile을 ObjectStorage에 저장한다.
-		prefix = Integer.toString(master.getCid())  + "-" + uuid + "-contract-";
+
+		// 3. contractFile을 ObjectStorage에 저장한다.
+		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-contract-";
 		String contractObj = storageService.store(prefix, contractFile);
 		master.setContractFile(contractObj);
 		System.out.println("contractFile-->" + contractObj);
-		
-		//4. requestFile을 ObjectStorage에 저장한다.
-		prefix = Integer.toString(master.getCid())  + "-" + uuid + "-" + master.getRequestEmail() + "-";
+
+		// 4. requestFile을 ObjectStorage에 저장한다.
+		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-" + master.getRequestEmail() + "-";
 		String requestObj = storageService.store(prefix, requestFile);
 		master.setRequestFile(requestObj);
 		System.out.println("requestFile-->" + requestObj);
 
-		//5. Blockchain에 등록한다.
-		String txid = null;
-		master.setTxid("txid1");
-		
-		//6. 해쉬코드를 등록한다.
+		// 5. 해쉬코드를 등록한다.
 		master.setContractHash(master.getContractFile().hashCode());
 		master.setRequestHash(master.getRequestFile().hashCode());
 		
-		//7. 레코드를 업데이트 한다.
+		// 6. Blockchain에 등록한다.
+		//-------------------------
+		// 블록체인을 부르자~~~ 테스트하자~~
+		// setTxid 를 호출하자~~
+		//-------------------------
+		String txid = null;
+		master.setTxid("txid1");
+
+		// 7. 레코드를 업데이트 한다.
 		masterRepository.save(master);
-		
-		
-		redirectAttribute.addFlashAttribute("message","계약서 요청이 완료되었습니다.");
-		
+
+		redirectAttribute.addFlashAttribute("message", "계약서 요청이 완료되었습니다.");
+
 		return "redirect:/";
 	}
 
-
-
 	@PutMapping("/contract/{cid}")
-	public String approveContract(
-			Principal principal,
-			@PathVariable("cid") int cid,
-			@RequestPart MultipartFile approveFile,
-			RedirectAttributes redirectAttribute) {
-		
+	@ResponseBody	
+	public String approveContract(Principal principal, @PathVariable("cid") int cid,
+			@RequestPart MultipartFile approveFile, RedirectAttributes redirectAttribute) {
 
-		//1. 사용자 정보를 가져온다.
+		// 1. 사용자 정보를 가져온다.
 		User user = getUser(principal);
-		
-		//2. Master 레코드를 읽는다.
+
+		// 2. Master 레코드를 읽는다.
 		Master master = masterRepository.getOne(cid);
 		System.out.println(master);
-		
-		//3. 사용자 이름을 비교한다.
-		if(	!master.getApproveName().equals(user.getName()) || 
-			!master.getApproveEmail().equals(user.getEmail())) {
-			throw new EotException(9003,"사용자가 다릅니다.");
+
+		// 3. 사용자 이름을 비교한다.
+		if (!master.getApproveName().equals(user.getName()) || !master.getApproveEmail().equals(user.getEmail())) {
+			throw new EotException(9003, "사용자가 다릅니다.");
 		}
-		
-		//4. 날짜를 등록한다.
+
+		// 4. 날짜를 등록한다.
 		master.setApproveDT(new Date(System.currentTimeMillis()));
-		
+
 		UUID uuid = UUID.randomUUID();
 		String prefix = null;
 
-		//5. approveFile을 ObjectStorage에 저장한다.
-		prefix = Integer.toString(master.getCid())  + "-" + uuid + "-" + master.getApproveEmail() + "-";
+		// 5. approveFile을 ObjectStorage에 저장한다.
+		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-" + master.getApproveEmail() + "-";
 		String approveObj = storageService.store(prefix, approveFile);
 		master.setApproveFile(approveObj);
 		System.out.println("approveFile-->" + approveObj);
 
-		//6. 최종PDF를 만든다.
+		// 6. 최종PDF를 만든다.
 		String agreementFile = null;
 		try {
 			agreementFile = pdfConvertService.convert(master);
 		} catch (IOException | DocumentException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			throw new EotException(9000, e);
 		}
-		
-		
-		//7. pdfFile을 ObjectStorage에 저장한다.
-		prefix = Integer.toString(master.getCid())  + "-" + uuid + "-agreement-";
+
+		// 7. pdfFile을 ObjectStorage에 저장한다.
+		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-agreement-";
 		String agreementObj = storageService.store(prefix, agreementFile);
 		master.setAgreementFile(agreementObj);
 		System.out.println("setAgreementFile-->" + agreementObj);
-		
-		//6. Blockchain에 등록한다. ?????
-//		String txid = null;
-//		master.setTxid("txid1");
-		
-		//7. 해쉬코드를 등록한다.
+
+		// 8. 해쉬코드를 등록한다.
 		master.setApproveHash(master.getApproveFile().hashCode());
 		master.setAgreementHash(master.getAgreementFile().hashCode());
 		
-		//8. 레코드를 업데이트 한다.
+		
+		// 9. Blockchain에 등록한다. ?????
+//		String txid = null;
+//		master.setTxid("txid1");
+
+
+
+		// 8. 레코드를 업데이트 한다.
 		masterRepository.save(master);
-		
-		
-		redirectAttribute.addFlashAttribute("message","승인이 완료되었습니다.");
+
+		redirectAttribute.addFlashAttribute("message", "승인이 완료되었습니다.");
 		return "redirect:/";
 	}
-
 	
+	
+
 	public String approveContract() {
 		return "redirect:/";
 	}
