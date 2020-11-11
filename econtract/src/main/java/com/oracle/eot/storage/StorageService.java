@@ -1,7 +1,7 @@
 package com.oracle.eot.storage;
 
+import java.io.InputStream;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.springframework.core.io.Resource;
@@ -12,8 +12,10 @@ public interface StorageService {
 	void init();
 
 	String store(MultipartFile file);
-	
+
 	String store(String prefix, MultipartFile file);
+
+	String store(String prefix, String filename);
 
 	Stream<Path> loadAll();
 

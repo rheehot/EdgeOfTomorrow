@@ -1,17 +1,17 @@
 package com.oracle.eot.storage;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,15 +32,32 @@ public class FileSystemStorageService implements StorageService {
 	
 	@Override
 	public String store(String prefix, MultipartFile file) {
-		String filename = prefix + file.getOriginalFilename();
+		String outFilename = prefix + file.getOriginalFilename();
 		try {
 			if (file.isEmpty()) {
 				throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
 			}
-			Files.copy(file.getInputStream(), this.rootLocation.resolve(file.getOriginalFilename()));
-			return file.getOriginalFilename();
+			Files.copy(file.getInputStream(), this.rootLocation.resolve(outFilename));
+			
+			return outFilename;
 		} catch (IOException e) {
 			throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
+		}
+	}
+	
+	@Override
+	public String store(String prefix, String srcFilename) {
+		String outFilename = prefix + srcFilename;
+		try {
+			File srcFile = new File(srcFilename);
+			if(!srcFile.isFile()) {
+				throw new StorageException("Failed to store empty file " + srcFilename);
+			}
+			Files.copy(new FileInputStream(srcFile), this.rootLocation.resolve(outFilename));
+			
+			return outFilename;
+		} catch (IOException e) {
+			throw new StorageException("Failed to store file " + srcFilename, e);
 		}
 	}
 

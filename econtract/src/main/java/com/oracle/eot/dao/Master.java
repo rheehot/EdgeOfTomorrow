@@ -37,144 +37,229 @@ public class Master {
 	private String approveEmail;
 	
 	@Column
-	private String contractPath;
+	private String contractFile;
 	@Column
-	private String contractHash;
+	private int contractHash;
 	
 	@Column
-	private String requestPath;
+	private String requestFile;
 	@Column
-	private String requestHash;
+	private int requestHash;
 	
 	@Column
-	private String approvePath;
+	private String approveFile;
 	@Column
-	private String approveHash;
+	private int approveHash;
 	
 	@Column
-	private String pdfPath;
+	private String agreementFile;
 	@Column
-	private String pdfHash;
+	private int agreementHash;
 	
 	
-	public Master() {}
 	
+	public Master() {
+		super();
+	}
+
+
 	public Master(int cid) {
+		super();
 		this.cid = cid;
 	}
-	
-	//----------------------
-	
+
+
 	public int getCid() {
 		return cid;
 	}
+
+
 	public void setCid(int cid) {
 		this.cid = cid;
 	}
+
+
 	public String getTxid() {
 		return txid;
 	}
+
+
 	public void setTxid(String txid) {
 		this.txid = txid;
 	}
+
+
 	public String getPid() {
 		return pid;
 	}
+
+
 	public void setPid(String pid) {
 		this.pid = pid;
 	}
+
+
 	public Date getRequestDT() {
 		return requestDT;
 	}
+
+
 	public void setRequestDT(Date requestDT) {
 		this.requestDT = requestDT;
 	}
+
+
 	public String getRequestName() {
 		return requestName;
 	}
+
+
 	public void setRequestName(String requestName) {
 		this.requestName = requestName;
 	}
+
+
 	public String getRequestEmail() {
 		return requestEmail;
 	}
+
+
 	public void setRequestEmail(String requestEmail) {
 		this.requestEmail = requestEmail;
 	}
+
+
 	public Date getApproveDT() {
 		return approveDT;
 	}
+
+
 	public void setApproveDT(Date approveDT) {
 		this.approveDT = approveDT;
 	}
+
+
 	public String getApproveName() {
 		return approveName;
 	}
+
+
 	public void setApproveName(String approveName) {
 		this.approveName = approveName;
 	}
+
+
 	public String getApproveEmail() {
 		return approveEmail;
 	}
+
+
 	public void setApproveEmail(String approveEmail) {
 		this.approveEmail = approveEmail;
 	}
-	public String getContractPath() {
-		return contractPath;
+
+
+	public String getContractFile() {
+		return contractFile;
 	}
-	public void setContractPath(String contractPath) {
-		this.contractPath = contractPath;
+
+
+	public void setContractFile(String contractFile) {
+		this.contractFile = contractFile;
 	}
-	public String getContractHash() {
+
+
+	public int getContractHash() {
 		return contractHash;
 	}
-	public void setContractHash(String contractHash) {
+
+
+	public void setContractHash(int contractHash) {
 		this.contractHash = contractHash;
 	}
-	public String getRequestPath() {
-		return requestPath;
+
+
+	public String getRequestFile() {
+		return requestFile;
 	}
-	public void setRequestPath(String requestPath) {
-		this.requestPath = requestPath;
+
+
+	public void setRequestFile(String requestFile) {
+		this.requestFile = requestFile;
 	}
-	public String getRequestHash() {
+
+
+	public int getRequestHash() {
 		return requestHash;
 	}
-	public void setRequestHash(String requestHash) {
+
+
+	public void setRequestHash(int requestHash) {
 		this.requestHash = requestHash;
 	}
-	public String getApprovePath() {
-		return approvePath;
+
+
+	public String getApproveFile() {
+		return approveFile;
 	}
-	public void setApprovePath(String approvePath) {
-		this.approvePath = approvePath;
+
+
+	public void setApproveFile(String approveFile) {
+		this.approveFile = approveFile;
 	}
-	public String getApproveHash() {
+
+
+	public int getApproveHash() {
 		return approveHash;
 	}
-	public void setApproveHash(String approveHash) {
+
+
+	public void setApproveHash(int approveHash) {
 		this.approveHash = approveHash;
 	}
-	public String getPdfPath() {
-		return pdfPath;
+
+
+	public String getAgreementFile() {
+		return agreementFile;
 	}
-	public void setPdfPath(String pdfPath) {
-		this.pdfPath = pdfPath;
+
+
+	public void setAgreementFile(String agreementFile) {
+		this.agreementFile = agreementFile;
 	}
-	public String getPdfHash() {
-		return pdfHash;
+
+
+	public int getAgreementHash() {
+		return agreementHash;
 	}
-	public void setPdfHash(String pdfHash) {
-		this.pdfHash = pdfHash;
+
+
+	public void setAgreementHash(int agreementHash) {
+		this.agreementHash = agreementHash;
 	}
+
+
 	@Override
 	public String toString() {
 		return "Master [cid=" + cid + ", txid=" + txid + ", pid=" + pid + ", requestDT=" + requestDT + ", requestName="
 				+ requestName + ", requestEmail=" + requestEmail + ", approveDT=" + approveDT + ", approveName="
-				+ approveName + ", approveEmail=" + approveEmail + ", contractPath=" + contractPath + ", contractHash="
-				+ contractHash + ", requestPath=" + requestPath + ", requestHash=" + requestHash + ", approvePath="
-				+ approvePath + ", approveHash=" + approveHash + ", pdfPath=" + pdfPath + ", pdfHash=" + pdfHash + "]";
+				+ approveName + ", approveEmail=" + approveEmail + ", contractFile=" + contractFile + ", contractHash="
+				+ contractHash + ", requestFile=" + requestFile + ", requestHash=" + requestHash + ", approveFile="
+				+ approveFile + ", approveHash=" + approveHash + ", agreementFile=" + agreementFile + ", agreementHash="
+				+ agreementHash + ", getCid()=" + getCid() + ", getTxid()=" + getTxid() + ", getPid()=" + getPid()
+				+ ", getRequestDT()=" + getRequestDT() + ", getRequestName()=" + getRequestName()
+				+ ", getRequestEmail()=" + getRequestEmail() + ", getApproveDT()=" + getApproveDT()
+				+ ", getApproveName()=" + getApproveName() + ", getApproveEmail()=" + getApproveEmail()
+				+ ", getContractFile()=" + getContractFile() + ", getContractHash()=" + getContractHash()
+				+ ", getRequestFile()=" + getRequestFile() + ", getRequestHash()=" + getRequestHash()
+				+ ", getApproveFile()=" + getApproveFile() + ", getApproveHash()=" + getApproveHash()
+				+ ", getAgreementFile()=" + getAgreementFile() + ", getAgreementHash()=" + getAgreementHash()
+				+ ", getClass()=" + getClass() + ", hashCode()=" + hashCode() + ", toString()=" + super.toString()
+				+ "]";
 	}
-
 	
+	
+	
+	
+
 }

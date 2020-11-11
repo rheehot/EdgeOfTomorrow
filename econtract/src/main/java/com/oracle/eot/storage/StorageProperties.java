@@ -16,8 +16,9 @@ public class StorageProperties {
 	private String location = "upload-dir";
 	
 	/**
-	 * OCI ObjectStorage 설정
+	 * OCI 설정
 	 */
+	private String configurationFilePath = "./oci/config";
 	private Region region = Region.US_ASHBURN_1;
 	private String namespaceName = "id3tdyhkmip4";
 	private String bucketName = "econtract-bucket";
@@ -36,6 +37,14 @@ public class StorageProperties {
 		this.location = location;
 	}
 	
+
+	public String getConfigurationFilePath() {
+		return configurationFilePath;
+	}
+
+	public void setConfigurationFilePath(String configurationFilePath) {
+		this.configurationFilePath = configurationFilePath;
+	}
 
 	public Region getRegion() {
 		return region;
