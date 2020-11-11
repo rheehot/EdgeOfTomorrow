@@ -29,7 +29,7 @@ public class EotUserDetailsService implements UserDetailsService {
 		Optional<User> userOpt = userRepository.findById(userid);
 		if (!userOpt.isPresent()) {
 //          throw new IllegalArgumentException();
-			throw new EotException(9001, userid + " is not exist");
+			throw new EotException(userid + " is not exist");
 		}
 		
 		User user = userOpt.get();

@@ -1,34 +1,22 @@
 package com.oracle.eot.exception;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseStatus;
+
+@ResponseStatus(HttpStatus.BAD_REQUEST)
 public class EotException extends RuntimeException {
+	private static final long serialVersionUID = 1L;
 
-	private static final long serialVersionUID = 8157950270805037015L;
-	private int code;
-
-	public int getCode() {
-		return code;
+	public EotException(String msg) {
+		super(msg);
+	}
+	
+	public EotException(String msg, Throwable e) {
+		super(msg, e);
+	}
+	
+	public EotException(Throwable e) {
+		super(e);
 	}
 
-	public void setCode(int code) {
-		this.code = code;
-	}
-
-	public EotException() {
-		super();
-	}
-
-	public EotException(int code, String message) {
-		super(message);
-		this.code = code;
-	}
-
-	public EotException(int code, String message, Throwable cause) {
-		super(message, cause);
-		this.code = code;
-	}
-
-	public EotException(int code, Throwable cause) {
-		super(cause);
-		this.code = code;
-	}
 }

@@ -4,8 +4,24 @@ values ('request1', '$2a$10$cYdFZoku5bOUGwYEL.Tk5e6fFjf1V0SQj5v98OdeO8UFPWI5pVK4
 insert into "user" (userid, password, name, email, companyid)
 values ('approve1', '$2a$10$cYdFZoku5bOUGwYEL.Tk5e6fFjf1V0SQj5v98OdeO8UFPWI5pVK4y', '오라클', 'approve@oracle.com' ,'company1');
 
+insert into "user" (userid, password, name, email, companyid)
+values ('admin', '$2a$10$cYdFZoku5bOUGwYEL.Tk5e6fFjf1V0SQj5v98OdeO8UFPWI5pVK4y', '어드민', 'admin@oracle.com' ,'company1');
 
-delete from ADMIN."user" where userid = 'user1'
+insert into "status" (code, context) 
+values (1, '계약서 생성(요청자)');
+
+insert into "status" (code, context) 
+values (2, '승인 메일 발송');
+
+insert into "status" (code, context) 
+values (3, '승인자 승인 완료');
+
+insert into "status" (code, context) 
+values (4, '계약서 합의 완료');
+
+
+delete from ADMIN."user" where userid = 'user1';
+drop table stats cascade constraints;
 ---
  
  
@@ -13,6 +29,7 @@ delete from ADMIN."user" where userid = 'user1'
 
 ----
 create sequence hibernate_sequence start with 1 increment by  1
+create table "history" (historydt date not null, cid number(10,0) not null, state number(10,0), primary key (historydt, cid))
 create table "master" (cid number(10,0) not null, agreement_file varchar2(255 char), agreement_hash number(10,0), approvedt date, approve_email varchar2(255 char), approve_file varchar2(255 char), approve_hash number(10,0), approve_name varchar2(255 char), contract_file varchar2(255 char), contract_hash number(10,0), pid varchar2(255 char), requestdt date, request_email varchar2(255 char), request_file varchar2(255 char), request_hash number(10,0), request_name varchar2(255 char), txid varchar2(255 char), primary key (cid))
+create table "status" (code number(10,0) not null, context varchar2(255 char), primary key (code))
 create table "user" (userid varchar2(255 char) not null, companyid varchar2(255 char), email varchar2(255 char), name varchar2(255 char), password varchar2(255 char), primary key (userid))
-

@@ -1,11 +1,13 @@
 package com.oracle.eot;
 
 import java.io.IOException;
+import java.nio.file.NoSuchFileException;
 import java.security.Principal;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -22,9 +24,14 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.itextpdf.text.DocumentException;
+import com.oracle.eot.dao.ContractStatus;
+import com.oracle.eot.dao.History;
+import com.oracle.eot.dao.HistoryPK;
 import com.oracle.eot.dao.Master;
 import com.oracle.eot.dao.User;
 import com.oracle.eot.exception.EotException;
+import com.oracle.eot.repo.ContractStatusRepository;
+import com.oracle.eot.repo.HistoryRepository;
 import com.oracle.eot.repo.MasterRepository;
 import com.oracle.eot.repo.UserRepository;
 import com.oracle.eot.storage.PdfConvertService;
@@ -41,34 +48,103 @@ public class EcontractController {
 	private MasterRepository masterRepository;
 
 	@Autowired
+	private HistoryRepository historyRepository;
+	
+	@Autowired
+	private ContractStatusRepository contractStatusRepository;
+	
+	@Autowired
 	private StorageService storageService;
 
 	@Autowired
 	private PdfConvertService pdfConvertService;
 
-	private static final String template = "Hello, %s!";
-	private final AtomicLong counter = new AtomicLong();
-
 	@GetMapping("/")
-	public Greeting greeting(@RequestParam(value = "name", defaultValue = "World") String name) {
+	public Message greeting(@RequestParam(value = "message", defaultValue = "Hello") String message) {
 		System.out.println(storageService);
-		return new Greeting(counter.incrementAndGet(), String.format(template, name));
+		return new Message(message);
 	}
 
-	@GetMapping("/login")
-	public User getUser(Principal principal) {
+
+	@GetMapping("/users")
+	public List<User> getUserList(Principal principal) {
+		if(!principal.getName().equals("admin")) {
+			throw new EotException("you have no permission to do");
+		}
+		
+		return userRepository.findAll();
+	}
+
+	@GetMapping("/users/{userid}")
+	public User getUser(Principal principal, @PathVariable("userid") String userid) {
+		if(!principal.getName().equals("admin") && !principal.getName().equals(userid)) {
+			throw new EotException("you have no permission to do");
+		} 
+		Optional<User> userOpt = userRepository.findById(userid);
+
+		if (!userOpt.isPresent()) {
+			throw new EotException(userid + " is not exist");
+		}
+		return userOpt.get();
+	}
+	
+	
+	private User getUser(Principal principal) {
 		String userid = principal.getName();
 		Optional<User> userOpt = userRepository.findById(userid);
 
 		if (!userOpt.isPresent()) {
-			throw new EotException(9001, userid + " is not exist");
+			throw new EotException(userid + " is not exist");
 		}
 		return userOpt.get();
+	}
+	
+	@GetMapping("/contracts")
+	public List<Master> getContractList(Principal principal){
+		List<Master> list = new ArrayList<Master>();
+		
+		// 1. 사용자 정보를 가져온다.
+		User user = getUser(principal);
+		
+		// 2. 신청한 건수들
+		List<Master> requestList = masterRepository.findByRequestEmail(user.getEmail());
+
+		// 2. 승인한 건수들
+		List<Master> approveList = masterRepository.findByApproveEmail(user.getEmail());
+
+		list.addAll(requestList);
+		list.addAll(approveList);
+		
+		return list;
+		
+	}
+	
+	
+	
+	@GetMapping("/contracts/{cid}")
+	public Master getContract(Principal principal, @PathVariable("cid") int cid) {
+		// 1. 사용자 정보를 가져온다.
+		User user = getUser(principal);
+
+		// 2. Master 레코드를 읽는다.
+		Master master = masterRepository.getOne(cid);
+		System.out.println(master);
+
+		// 3. 신청자인지 비교한다.
+		if (!master.getRequestName().equals(user.getName()) || !master.getRequestEmail().equals(user.getEmail())) {
+			// 4. 승인자인지 비교한다.
+			if (!master.getApproveName().equals(user.getName()) || !master.getApproveEmail().equals(user.getEmail())) {
+				throw new EotException("사용자가 다릅니다.");
+			}
+		}
+
+		return master;
+		
 	}
 
 	@PostMapping("/contract")
 	@ResponseBody
-	public String requestContract(Principal principal, @RequestPart String pid, @RequestPart String approveName,
+	public ResponseEntity requestContract(Principal principal, @RequestPart String pid, @RequestPart String approveName,
 			@RequestPart String approveEmail, @RequestPart MultipartFile contractFile,
 			@RequestPart MultipartFile requestFile, RedirectAttributes redirectAttribute) {
 
@@ -77,7 +153,6 @@ public class EcontractController {
 
 		// 2. Master 레코드를 만든다.
 		Master master = new Master();
-		master.setRequestDT(new Date(System.currentTimeMillis()));
 		master.setPid(pid);
 		master.setRequestName(user.getName());
 		master.setRequestEmail(user.getEmail());
@@ -113,17 +188,24 @@ public class EcontractController {
 		String txid = null;
 		master.setTxid("txid1");
 
-		// 7. 레코드를 업데이트 한다.
+		// 7. 날짜를 등록한다.
+		master.setRequestDT(new Date(System.currentTimeMillis()));
+		
+		// 8. 레코드를 업데이트 한다.
 		masterRepository.save(master);
 
-		redirectAttribute.addFlashAttribute("message", "계약서 요청이 완료되었습니다.");
-
-		return "redirect:/";
+		// 9. 히스토리 업데이트 
+		makeHistory(master.getCid(), ContractStatus.REQUEST);
+		
+		// 10. email 보내는 쪽 호출
+		makeHistory(master.getCid(), ContractStatus.EMAIL);
+		
+		return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. cid=" + master.getCid()));
 	}
 
 	@PutMapping("/contract/{cid}")
 	@ResponseBody	
-	public String approveContract(Principal principal, @PathVariable("cid") int cid,
+	public ResponseEntity approveContract(Principal principal, @PathVariable("cid") int cid,
 			@RequestPart MultipartFile approveFile, RedirectAttributes redirectAttribute) {
 
 		// 1. 사용자 정보를 가져온다.
@@ -133,64 +215,84 @@ public class EcontractController {
 		Master master = masterRepository.getOne(cid);
 		System.out.println(master);
 
-		// 3. 사용자 이름을 비교한다.
+		// 3. 승인자인지 비교한다.
 		if (!master.getApproveName().equals(user.getName()) || !master.getApproveEmail().equals(user.getEmail())) {
-			throw new EotException(9003, "사용자가 다릅니다.");
+			throw new EotException("사용자가 다릅니다.");
 		}
-
-		// 4. 날짜를 등록한다.
-		master.setApproveDT(new Date(System.currentTimeMillis()));
 
 		UUID uuid = UUID.randomUUID();
 		String prefix = null;
 
-		// 5. approveFile을 ObjectStorage에 저장한다.
+		// 4. approveFile을 ObjectStorage에 저장한다.
 		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-" + master.getApproveEmail() + "-";
 		String approveObj = storageService.store(prefix, approveFile);
 		master.setApproveFile(approveObj);
 		System.out.println("approveFile-->" + approveObj);
 
-		// 6. 최종PDF를 만든다.
+		// 5. 최종PDF를 만든다.
 		String agreementFile = null;
 		try {
 			agreementFile = pdfConvertService.convert(master);
 		} catch (IOException | DocumentException e) {
 			e.printStackTrace();
-			throw new EotException(9000, e);
+			throw new EotException(e);
 		}
 
-		// 7. pdfFile을 ObjectStorage에 저장한다.
+		// 6. pdfFile을 ObjectStorage에 저장한다.
 		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-agreement-";
 		String agreementObj = storageService.store(prefix, agreementFile);
 		master.setAgreementFile(agreementObj);
 		System.out.println("setAgreementFile-->" + agreementObj);
-
-		// 8. 해쉬코드를 등록한다.
+		
+		// 7. 해쉬코드를 등록한다.
 		master.setApproveHash(master.getApproveFile().hashCode());
 		master.setAgreementHash(master.getAgreementFile().hashCode());
 		
 		
-		// 9. Blockchain에 등록한다. ?????
+		// 8. Blockchain에 등록한다. ?????
 //		String txid = null;
 //		master.setTxid("txid1");
 
-
-
-		// 8. 레코드를 업데이트 한다.
+		// 9. 날짜를 등록한다.
+		master.setApproveDT(new Date(System.currentTimeMillis()));
+		
+		// 10. 레코드를 업데이트 한다.
 		masterRepository.save(master);
 
-		redirectAttribute.addFlashAttribute("message", "승인이 완료되었습니다.");
-		return "redirect:/";
+		
+		// 11. history 업데이트
+		makeHistory(master.getCid(), ContractStatus.APPROVE);
+		makeHistory(master.getCid(), ContractStatus.DONE);
+		
+	
+		return ResponseEntity.ok().body(new Message("계약서 승인이 완료되었습니다."));
 	}
 	
 	
 
-	public String approveContract() {
-		return "redirect:/";
+	@GetMapping("/history/{cid}")
+	public List<History> getHistory(Principal principal, @PathVariable("cid") int cid) {
+		List<History> historyList = historyRepository.findByCid(cid);
+		return historyList;
 	}
-
+	
+	
+	private History makeHistory(int cid, int status) {
+		HistoryPK hpk = new HistoryPK(cid, new Date(System.currentTimeMillis()));
+		History history = new History();
+		history.setCid(hpk.getCid());
+		history.setHistoryDT(hpk.getHistoryDT());
+		history.setState(status);
+		return historyRepository.save(history);
+	}
+	
+	@ExceptionHandler(EotException.class)
+	public ResponseEntity<?> handleEotException(EotException e) {
+		return ResponseEntity.badRequest().body(new Message(e.getMessage()));
+	}
+	
 	@ExceptionHandler(StorageFileNotFoundException.class)
-	public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException exc) {
+	public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException e) {
 		return ResponseEntity.notFound().build();
 	}
 
