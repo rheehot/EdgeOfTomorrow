@@ -1,7 +1,6 @@
 package com.oracle.eot;
 
 import java.io.IOException;
-import java.nio.file.NoSuchFileException;
 import java.security.Principal;
 import java.sql.Date;
 import java.util.ArrayList;
@@ -282,7 +281,12 @@ public class EcontractController {
 		History history = new History();
 		history.setCid(hpk.getCid());
 		history.setHistoryDT(hpk.getHistoryDT());
-		history.setState(status);
+		
+		Optional<ContractStatus> statusOpt = contractStatusRepository.findById(status);
+		if(statusOpt.isEmpty()) {
+			throw new EotException("status code " + status + " is not exist");
+		}
+		history.setState(statusOpt.get().getContext());
 		return historyRepository.save(history);
 	}
 	

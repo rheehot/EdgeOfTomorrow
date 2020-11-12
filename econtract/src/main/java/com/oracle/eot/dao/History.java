@@ -19,7 +19,7 @@ public class History {
 	private Date historyDT;
 
 	@Column
-	private int state;
+	private String state;
 
 	public int getCid() {
 		return cid;
@@ -37,13 +37,12 @@ public class History {
 		this.historyDT = historyDT;
 	}
 
-	public int getState() {
+	public String getState() {
 		return state;
 	}
 
-	public void setState(int state) {
+	public void setState(String state) {
 		this.state = state;
 	}
-	
-	
+
 }
