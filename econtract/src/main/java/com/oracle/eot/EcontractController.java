@@ -25,7 +25,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.itextpdf.text.DocumentException;
 import com.oracle.eot.dao.ContractStatus;
 import com.oracle.eot.dao.History;
-import com.oracle.eot.dao.HistoryPK;
 import com.oracle.eot.dao.Master;
 import com.oracle.eot.dao.User;
 import com.oracle.eot.exception.EotException;
@@ -277,10 +276,9 @@ public class EcontractController {
 	
 	
 	private History makeHistory(int cid, int status) {
-		HistoryPK hpk = new HistoryPK(cid, new Date(System.currentTimeMillis()));
 		History history = new History();
-		history.setCid(hpk.getCid());
-		history.setHistoryDT(hpk.getHistoryDT());
+		history.setCid(cid);
+		history.setHistoryDT(new Date(System.currentTimeMillis()));
 		
 		Optional<ContractStatus> statusOpt = contractStatusRepository.findById(status);
 		if(statusOpt.isEmpty()) {

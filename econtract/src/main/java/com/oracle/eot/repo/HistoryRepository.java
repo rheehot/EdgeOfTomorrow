@@ -6,9 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import com.oracle.eot.dao.History;
-import com.oracle.eot.dao.HistoryPK;
 
 @Repository
-public interface HistoryRepository extends JpaRepository<History, HistoryPK> {
+public interface HistoryRepository extends JpaRepository<History, Integer> {
 	public List<History> findByCid(int cid);
 }
