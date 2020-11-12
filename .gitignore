@@ -36,6 +36,6 @@ buildNumber.properties
 .mvn/wrapper/maven-wrapper.jar
 
 # My Setting
-upload-dir/
-oci/
-Wallet/
+#upload-dir/
+#oci/
+#Wallet/
