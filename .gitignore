@@ -37,3 +37,5 @@ buildNumber.properties
 
 # My Setting
 upload-dir/
+oci/
+Wallet/
