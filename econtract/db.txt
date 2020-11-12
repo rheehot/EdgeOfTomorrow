@@ -29,7 +29,7 @@ drop table stats cascade constraints;
 
 ----
 create sequence hibernate_sequence start with 1 increment by  1
-create table "history" (historydt date not null, cid number(10,0) not null, state number(10,0), primary key (historydt, cid))
+create table "history" (historydt date not null, cid number(10,0) not null, state varchar2(255 char), primary key (historydt, cid))
 create table "master" (cid number(10,0) not null, agreement_file varchar2(255 char), agreement_hash number(10,0), approvedt date, approve_email varchar2(255 char), approve_file varchar2(255 char), approve_hash number(10,0), approve_name varchar2(255 char), contract_file varchar2(255 char), contract_hash number(10,0), pid varchar2(255 char), requestdt date, request_email varchar2(255 char), request_file varchar2(255 char), request_hash number(10,0), request_name varchar2(255 char), txid varchar2(255 char), primary key (cid))
 create table "status" (code number(10,0) not null, context varchar2(255 char), primary key (code))
 create table "user" (userid varchar2(255 char) not null, companyid varchar2(255 char), email varchar2(255 char), name varchar2(255 char), password varchar2(255 char), primary key (userid))
