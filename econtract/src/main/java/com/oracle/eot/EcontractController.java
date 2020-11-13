@@ -63,11 +63,28 @@ public class EcontractController {
 	private PdfConvertService pdfConvertService;
 
 	@GetMapping("/")
-	public Message greeting(@RequestParam(value = "message", defaultValue = "Hello") String message) {
+	public Message login(@RequestParam(value = "message", defaultValue = "Hello") String message) {
 		System.out.println(storageService);
 		return new Message(message);
 	}
 
+	@PostMapping("/login")
+	public User login(Principal principal) {
+		System.out.println(storageService);
+		return getUser(principal);
+	}
+	
+	private User getUser(Principal principal) {
+		String userid = principal.getName();
+		
+		Optional<User> userOpt = userRepository.findById(userid);
+
+		if (!userOpt.isPresent()) {
+			throw new EotException(userid + " is not exist");
+		}
+		return userOpt.get();
+	}
+	
 	@GetMapping("/users")
 	public List<User> getUserList(Principal principal) {
 		if (!principal.getName().equals("admin")) {
@@ -91,16 +108,7 @@ public class EcontractController {
 		return userOpt.get();
 	}
 
-	private User getUser(Principal principal) {
-		String userid = principal.getName();
-		
-		Optional<User> userOpt = userRepository.findById(userid);
 
-		if (!userOpt.isPresent()) {
-			throw new EotException(userid + " is not exist");
-		}
-		return userOpt.get();
-	}
 
 	@GetMapping("/list")
 	public List<Item> getContractList(Principal principal) {
