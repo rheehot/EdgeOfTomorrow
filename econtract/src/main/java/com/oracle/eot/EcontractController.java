@@ -2,17 +2,21 @@ package com.oracle.eot;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.security.SecureRandom;
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,7 +30,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.itextpdf.text.DocumentException;
 import com.oracle.eot.dao.ContractStatus;
 import com.oracle.eot.dao.History;
 import com.oracle.eot.dao.Master;
@@ -37,12 +40,14 @@ import com.oracle.eot.repo.ContractStatusRepository;
 import com.oracle.eot.repo.HistoryRepository;
 import com.oracle.eot.repo.MasterRepository;
 import com.oracle.eot.repo.UserRepository;
-import com.oracle.eot.storage.PdfConvertService;
+import com.oracle.eot.storage.ConvertService;
 import com.oracle.eot.storage.StorageFileNotFoundException;
 import com.oracle.eot.storage.StorageService;
 
 @RestController
 public class EcontractController {
+
+	private static final Logger logger = LoggerFactory.getLogger(EcontractController.class);
 
 	@Autowired
 	private UserRepository userRepository;
@@ -60,7 +65,7 @@ public class EcontractController {
 	private StorageService storageService;
 
 	@Autowired
-	private PdfConvertService pdfConvertService;
+	private ConvertService convertService;
 
 	@GetMapping("/")
 	public Message login(@RequestParam(value = "message", defaultValue = "Hello") String message) {
@@ -73,10 +78,10 @@ public class EcontractController {
 		System.out.println(storageService);
 		return getUser(principal);
 	}
-	
+
 	private User getUser(Principal principal) {
 		String userid = principal.getName();
-		
+
 		Optional<User> userOpt = userRepository.findById(userid);
 
 		if (!userOpt.isPresent()) {
@@ -84,7 +89,7 @@ public class EcontractController {
 		}
 		return userOpt.get();
 	}
-	
+
 	@GetMapping("/users")
 	public List<User> getUserList(Principal principal) {
 		if (!principal.getName().equals("admin")) {
@@ -99,7 +104,7 @@ public class EcontractController {
 		if (!principal.getName().equals("admin") && !principal.getName().equals(userid)) {
 			throw new EotException("you have no permission to do");
 		}
-		
+
 		Optional<User> userOpt = userRepository.findById(userid);
 
 		if (!userOpt.isPresent()) {
@@ -107,8 +112,6 @@ public class EcontractController {
 		}
 		return userOpt.get();
 	}
-
-
 
 	@GetMapping("/list")
 	public List<Item> getContractList(Principal principal) {
@@ -171,17 +174,17 @@ public class EcontractController {
 
 	@PostMapping("/contracts")
 	@ResponseBody
-	public ResponseEntity requestContract(Principal principal, @RequestPart String title, @RequestPart(value="pid", required = false) String pid,
-			@RequestPart String approveName, @RequestPart String approveEmail, @RequestPart MultipartFile contractFile,
+	public ResponseEntity requestContract(Principal principal, @RequestPart String title,
+			@RequestPart(value = "pid", required = false) String pid, @RequestPart String approveName,
+			@RequestPart String approveEmail, @RequestPart MultipartFile contractFile,
 			@RequestPart MultipartFile requestFile, RedirectAttributes redirectAttribute) {
 
-		
 		String uuid = UUID.randomUUID().toString();
 
 		// 1. 사용자 정보를 가져온다.
 		User user = getUser(principal);
 
-		if(pid == null || pid.isEmpty()) {
+		if (pid == null || pid.isEmpty()) {
 			pid = uuid;
 		}
 		// 2. Master 레코드를 만든다.
@@ -247,10 +250,10 @@ public class EcontractController {
 		Master master = masterRepository.findByUuid(uuid);
 		System.out.println(master);
 
-		if(master == null) {
+		if (master == null) {
 			throw new EotException(uuid + " 에 대한 계약이 없습니다.");
 		}
-		
+
 		// 3. 승인자인지 비교한다.
 		if (!master.getApproveEmail().equals(approveEmail)) {
 			throw new EotException(approveEmail + " 은 지정된 승인자가 아닙니다.");
@@ -266,12 +269,7 @@ public class EcontractController {
 
 		// 5. 최종PDF를 만든다.
 		String agreementFile = null;
-		try {
-			agreementFile = pdfConvertService.convert(master);
-		} catch (IOException | DocumentException e) {
-			e.printStackTrace();
-			throw new EotException(e);
-		}
+		agreementFile = convertService.convertToPdf(master);
 
 		// 6. pdfFile을 ObjectStorage에 저장한다.
 		prefix = Integer.toString(master.getCid()) + "-" + master.getUuid() + "-agreement-";
@@ -305,7 +303,39 @@ public class EcontractController {
 		List<History> historyList = historyRepository.findByUuid(uuid);
 		return historyList;
 	}
-	
+
+	@GetMapping("/download/{filename}")
+	public ResponseEntity<Resource> download(@PathVariable("filename") String filename, HttpServletRequest request) {
+		System.out.println("Download file " + filename);
+
+		String copyedFile;
+		try {
+			copyedFile = convertService.copyToLocation(filename);
+		} catch (IOException e) {
+			throw new EotException(filename + " 을 복사 할수 없습니다.", e);
+		}
+		System.out.println("Copyed file " + copyedFile);
+
+		Resource resource = convertService.loadFileAsResource(filename);
+		System.out.println(resource);
+		if (!resource.exists() || !resource.isReadable()) {
+			throw new EotException(filename + " 을 읽을 수 없습니다.");
+		}
+
+		// Try to determine file's content type
+		String contentType = null;
+		try {
+			contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+		} catch (IOException ex) {
+			contentType = "application/octet-stream";
+		}
+
+		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+				.body(resource);
+
+	}
+
 
 	private History makeHistory(String uuid, int status) {
 		History history = new History();
