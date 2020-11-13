@@ -9,5 +9,5 @@ import com.oracle.eot.dao.History;
 
 @Repository
 public interface HistoryRepository extends JpaRepository<History, Integer> {
-	public List<History> findByCid(int cid);
+	public List<History> findByUuid(String uuid);
 }

@@ -2,8 +2,12 @@ package com.oracle.eot;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.security.SecureRandom;
 import java.sql.Date;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,6 +31,7 @@ import com.oracle.eot.dao.ContractStatus;
 import com.oracle.eot.dao.History;
 import com.oracle.eot.dao.Master;
 import com.oracle.eot.dao.User;
+import com.oracle.eot.dto.Item;
 import com.oracle.eot.exception.EotException;
 import com.oracle.eot.repo.ContractStatusRepository;
 import com.oracle.eot.repo.HistoryRepository;
@@ -47,10 +52,10 @@ public class EcontractController {
 
 	@Autowired
 	private HistoryRepository historyRepository;
-	
+
 	@Autowired
 	private ContractStatusRepository contractStatusRepository;
-	
+
 	@Autowired
 	private StorageService storageService;
 
@@ -63,21 +68,21 @@ public class EcontractController {
 		return new Message(message);
 	}
 
-
 	@GetMapping("/users")
 	public List<User> getUserList(Principal principal) {
-		if(!principal.getName().equals("admin")) {
+		if (!principal.getName().equals("admin")) {
 			throw new EotException("you have no permission to do");
 		}
-		
+
 		return userRepository.findAll();
 	}
 
 	@GetMapping("/users/{userid}")
 	public User getUser(Principal principal, @PathVariable("userid") String userid) {
-		if(!principal.getName().equals("admin") && !principal.getName().equals(userid)) {
+		if (!principal.getName().equals("admin") && !principal.getName().equals(userid)) {
 			throw new EotException("you have no permission to do");
-		} 
+		}
+		
 		Optional<User> userOpt = userRepository.findById(userid);
 
 		if (!userOpt.isPresent()) {
@@ -85,10 +90,10 @@ public class EcontractController {
 		}
 		return userOpt.get();
 	}
-	
-	
+
 	private User getUser(Principal principal) {
 		String userid = principal.getName();
+		
 		Optional<User> userOpt = userRepository.findById(userid);
 
 		if (!userOpt.isPresent()) {
@@ -96,62 +101,86 @@ public class EcontractController {
 		}
 		return userOpt.get();
 	}
-	
-	@GetMapping("/contracts")
-	public List<Master> getContractList(Principal principal){
-		List<Master> list = new ArrayList<Master>();
-		
-		// 1. 사용자 정보를 가져온다.
-		User user = getUser(principal);
-		
-		// 2. 신청한 건수들
-		List<Master> requestList = masterRepository.findByRequestEmail(user.getEmail());
 
-		// 2. 승인한 건수들
-		List<Master> approveList = masterRepository.findByApproveEmail(user.getEmail());
+	@GetMapping("/list")
+	public List<Item> getContractList(Principal principal) {
+		List<Item> itemList = new ArrayList<Item>();
 
-		list.addAll(requestList);
-		list.addAll(approveList);
-		
-		return list;
-		
-	}
-	
-	
-	
-	@GetMapping("/contracts/{cid}")
-	public Master getContract(Principal principal, @PathVariable("cid") int cid) {
 		// 1. 사용자 정보를 가져온다.
 		User user = getUser(principal);
 
 		// 2. Master 레코드를 읽는다.
-		Master master = masterRepository.getOne(cid);
+		List<Master> masterList = masterRepository.findByRequestEmail(user.getEmail());
+
+		for (Master master : masterList) {
+			Item item = new Item();
+			item.setApproveEmail(master.getApproveEmail());
+			item.setApproveName(master.getApproveName());
+			item.setCid(master.getCid());
+			if (master.getApproveDT() != null)
+				item.setDt(master.getApproveDT());
+			else
+				item.setDt(master.getRequestDT());
+			item.setTitle(master.getTitle());
+			item.setTxid(master.getTxid());
+
+			itemList.add(item);
+		}
+
+		return itemList;
+
+	}
+
+	@GetMapping("/contracts")
+	public List<Master> getContracts(Principal principal) {
+		// 1. 사용자 정보를 가져온다.
+		User user = getUser(principal);
+
+		// 2. 신청한 건수들
+		List<Master> list = masterRepository.findByRequestEmail(user.getEmail());
+
+		return list;
+
+	}
+
+	@GetMapping("/contracts/{uuid}")
+	public Master getContract(Principal principal, @PathVariable("uuid") String uuid) {
+		// 1. 사용자 정보를 가져온다.
+		User user = getUser(principal);
+
+		// 2. Master 레코드를 읽는다.
+		Master master = masterRepository.findByUuid(uuid);
 		System.out.println(master);
 
 		// 3. 신청자인지 비교한다.
 		if (!master.getRequestName().equals(user.getName()) || !master.getRequestEmail().equals(user.getEmail())) {
-			// 4. 승인자인지 비교한다.
-			if (!master.getApproveName().equals(user.getName()) || !master.getApproveEmail().equals(user.getEmail())) {
-				throw new EotException("사용자가 다릅니다.");
-			}
+			throw new EotException("해당 계약에 대한 요청자가 아닙니다.");
 		}
 
 		return master;
-		
+
 	}
 
-	@PostMapping("/contract")
+	@PostMapping("/contracts")
 	@ResponseBody
-	public ResponseEntity requestContract(Principal principal, @RequestPart String pid, @RequestPart String approveName,
-			@RequestPart String approveEmail, @RequestPart MultipartFile contractFile,
+	public ResponseEntity requestContract(Principal principal, @RequestPart String title, @RequestPart(value="pid", required = false) String pid,
+			@RequestPart String approveName, @RequestPart String approveEmail, @RequestPart MultipartFile contractFile,
 			@RequestPart MultipartFile requestFile, RedirectAttributes redirectAttribute) {
+
+		
+		String uuid = UUID.randomUUID().toString();
 
 		// 1. 사용자 정보를 가져온다.
 		User user = getUser(principal);
 
+		if(pid == null || pid.isEmpty()) {
+			pid = uuid;
+		}
 		// 2. Master 레코드를 만든다.
 		Master master = new Master();
+		master.setUuid(uuid);
 		master.setPid(pid);
+		master.setTitle(title);
 		master.setRequestName(user.getName());
 		master.setRequestEmail(user.getEmail());
 		master.setApproveName(approveName);
@@ -159,7 +188,6 @@ public class EcontractController {
 		master = masterRepository.save(master);
 		System.out.println(master);
 
-		UUID uuid = UUID.randomUUID();
 		String prefix = null;
 
 		// 3. contractFile을 ObjectStorage에 저장한다.
@@ -177,52 +205,53 @@ public class EcontractController {
 		// 5. 해쉬코드를 등록한다.
 		master.setContractHash(master.getContractFile().hashCode());
 		master.setRequestHash(master.getRequestFile().hashCode());
-		
+
 		// 6. Blockchain에 등록한다.
-		//-------------------------
+		// -------------------------
 		// 블록체인을 부르자~~~ 테스트하자~~
 		// setTxid 를 호출하자~~
-		//-------------------------
+		// -------------------------
 		String txid = null;
 		master.setTxid("txid1");
 
 		// 7. 날짜를 등록한다.
-		master.setRequestDT(new Date(System.currentTimeMillis()));
-		
+		master.setRequestDT(Timestamp.valueOf(LocalDateTime.now()));
+
 		// 8. 레코드를 업데이트 한다.
 		masterRepository.save(master);
 
-		// 9. 히스토리 업데이트 
-		makeHistory(master.getCid(), ContractStatus.REQUEST);
-		
+		// 9. 히스토리 업데이트
+		makeHistory(master.getUuid(), ContractStatus.REQUEST);
+
 		// 10. email 보내는 쪽 호출
-		makeHistory(master.getCid(), ContractStatus.EMAIL);
-		
-		return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. cid=" + master.getCid()));
+		makeHistory(master.getUuid(), ContractStatus.EMAIL);
+
+		return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. uuid=" + master.getUuid()));
 	}
 
-	@PutMapping("/contract/{cid}")
-	@ResponseBody	
-	public ResponseEntity approveContract(Principal principal, @PathVariable("cid") int cid,
-			@RequestPart MultipartFile approveFile, RedirectAttributes redirectAttribute) {
-
-		// 1. 사용자 정보를 가져온다.
-		User user = getUser(principal);
+	@PutMapping("/contracts/{uuid}")
+	@ResponseBody
+	public ResponseEntity approveContract(Principal principal, @PathVariable("uuid") String uuid,
+			@RequestPart("approveEmail") String approveEmail, @RequestPart MultipartFile approveFile,
+			RedirectAttributes redirectAttribute) {
 
 		// 2. Master 레코드를 읽는다.
-		Master master = masterRepository.getOne(cid);
+		Master master = masterRepository.findByUuid(uuid);
 		System.out.println(master);
 
+		if(master == null) {
+			throw new EotException(uuid + " 에 대한 계약이 없습니다.");
+		}
+		
 		// 3. 승인자인지 비교한다.
-		if (!master.getApproveName().equals(user.getName()) || !master.getApproveEmail().equals(user.getEmail())) {
-			throw new EotException("사용자가 다릅니다.");
+		if (!master.getApproveEmail().equals(approveEmail)) {
+			throw new EotException(approveEmail + " 은 지정된 승인자가 아닙니다.");
 		}
 
-		UUID uuid = UUID.randomUUID();
 		String prefix = null;
 
 		// 4. approveFile을 ObjectStorage에 저장한다.
-		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-" + master.getApproveEmail() + "-";
+		prefix = Integer.toString(master.getCid()) + "-" + master.getUuid() + "-" + master.getApproveEmail() + "-";
 		String approveObj = storageService.store(prefix, approveFile);
 		master.setApproveFile(approveObj);
 		System.out.println("approveFile-->" + approveObj);
@@ -237,62 +266,57 @@ public class EcontractController {
 		}
 
 		// 6. pdfFile을 ObjectStorage에 저장한다.
-		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-agreement-";
+		prefix = Integer.toString(master.getCid()) + "-" + master.getUuid() + "-agreement-";
 		String agreementObj = storageService.store(prefix, agreementFile);
 		master.setAgreementFile(agreementObj);
 		System.out.println("setAgreementFile-->" + agreementObj);
-		
+
 		// 7. 해쉬코드를 등록한다.
 		master.setApproveHash(master.getApproveFile().hashCode());
 		master.setAgreementHash(master.getAgreementFile().hashCode());
-		
-		
+
 		// 8. Blockchain에 등록한다. ?????
 //		String txid = null;
 //		master.setTxid("txid1");
 
 		// 9. 날짜를 등록한다.
-		master.setApproveDT(new Date(System.currentTimeMillis()));
-		
+		master.setApproveDT(Timestamp.valueOf(LocalDateTime.now()));
+
 		// 10. 레코드를 업데이트 한다.
 		masterRepository.save(master);
 
-		
 		// 11. history 업데이트
-		makeHistory(master.getCid(), ContractStatus.APPROVE);
-		makeHistory(master.getCid(), ContractStatus.DONE);
-		
-	
+		makeHistory(master.getUuid(), ContractStatus.APPROVE);
+		makeHistory(master.getUuid(), ContractStatus.DONE);
+
 		return ResponseEntity.ok().body(new Message("계약서 승인이 완료되었습니다."));
 	}
-	
-	
 
-	@GetMapping("/history/{cid}")
-	public List<History> getHistory(Principal principal, @PathVariable("cid") int cid) {
-		List<History> historyList = historyRepository.findByCid(cid);
+	@GetMapping("/history/{uuid}")
+	public List<History> getHistory(Principal principal, @PathVariable("uuid") String uuid) {
+		List<History> historyList = historyRepository.findByUuid(uuid);
 		return historyList;
 	}
 	
-	
-	private History makeHistory(int cid, int status) {
+
+	private History makeHistory(String uuid, int status) {
 		History history = new History();
-		history.setCid(cid);
-		history.setHistoryDT(new Date(System.currentTimeMillis()));
-		
+		history.setUuid(uuid);
+		history.setHistoryDT(Timestamp.valueOf(LocalDateTime.now()));
+
 		Optional<ContractStatus> statusOpt = contractStatusRepository.findById(status);
-		if(statusOpt.isEmpty()) {
+		if (statusOpt.isEmpty()) {
 			throw new EotException("status code " + status + " is not exist");
 		}
 		history.setState(statusOpt.get().getContext());
 		return historyRepository.save(history);
 	}
-	
+
 	@ExceptionHandler(EotException.class)
 	public ResponseEntity<?> handleEotException(EotException e) {
 		return ResponseEntity.badRequest().body(new Message(e.getMessage()));
 	}
-	
+
 	@ExceptionHandler(StorageFileNotFoundException.class)
 	public ResponseEntity<?> handleStorageFileNotFound(StorageFileNotFoundException e) {
 		return ResponseEntity.notFound().build();

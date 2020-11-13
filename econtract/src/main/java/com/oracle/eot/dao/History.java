@@ -1,6 +1,7 @@
 package com.oracle.eot.dao;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,10 +19,10 @@ public class History {
 	private int id;	//Sequence
 	
 	@Column
-	private int cid;
+	private String uuid;
 	
 	@Column
-	private Date historyDT;
+	private Timestamp historyDT;
 	
 	@Column
 	private String state;
@@ -35,19 +36,19 @@ public class History {
 		this.id = id;
 	}
 
-	public int getCid() {
-		return cid;
+	public String getUuid() {
+		return uuid;
 	}
 
-	public void setCid(int cid) {
-		this.cid = cid;
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 
-	public Date getHistoryDT() {
+	public Timestamp getHistoryDT() {
 		return historyDT;
 	}
 
-	public void setHistoryDT(Date historyDT) {
+	public void setHistoryDT(Timestamp historyDT) {
 		this.historyDT = historyDT;
 	}
 

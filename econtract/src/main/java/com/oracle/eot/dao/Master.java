@@ -1,6 +1,7 @@
 package com.oracle.eot.dao;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,19 +19,25 @@ public class Master {
 	private int cid;	//Sequence
 	
 	@Column
+	private String uuid;
+	
+	@Column
+	private String title;
+	
+	@Column
 	private String txid;	//Blockchain Tx
 	@Column
 	private String pid;		//Property Id
 
 	@Column
-	private Date requestDT;		//request DateTime
+	private Timestamp requestDT;		//request DateTime
 	@Column
 	private String requestName;	//request Name 
 	@Column
 	private String requestEmail;	//request Email
 
 	@Column
-	private Date approveDT;
+	private Timestamp approveDT;
 	@Column
 	private String approveName;
 	@Column
@@ -68,6 +75,7 @@ public class Master {
 		this.cid = cid;
 	}
 
+	
 
 	public int getCid() {
 		return cid;
@@ -76,6 +84,26 @@ public class Master {
 
 	public void setCid(int cid) {
 		this.cid = cid;
+	}
+
+
+	public String getUuid() {
+		return uuid;
+	}
+
+
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
+	}
+
+
+	public String getTitle() {
+		return title;
+	}
+
+
+	public void setTitle(String title) {
+		this.title = title;
 	}
 
 
@@ -99,12 +127,12 @@ public class Master {
 	}
 
 
-	public Date getRequestDT() {
+	public Timestamp getRequestDT() {
 		return requestDT;
 	}
 
 
-	public void setRequestDT(Date requestDT) {
+	public void setRequestDT(Timestamp requestDT) {
 		this.requestDT = requestDT;
 	}
 
@@ -129,12 +157,15 @@ public class Master {
 	}
 
 
-	public Date getApproveDT() {
+
+
+
+	public Timestamp getApproveDT() {
 		return approveDT;
 	}
 
 
-	public void setApproveDT(Date approveDT) {
+	public void setApproveDT(Timestamp approveDT) {
 		this.approveDT = approveDT;
 	}
 
@@ -239,27 +270,6 @@ public class Master {
 	}
 
 
-	@Override
-	public String toString() {
-		return "Master [cid=" + cid + ", txid=" + txid + ", pid=" + pid + ", requestDT=" + requestDT + ", requestName="
-				+ requestName + ", requestEmail=" + requestEmail + ", approveDT=" + approveDT + ", approveName="
-				+ approveName + ", approveEmail=" + approveEmail + ", contractFile=" + contractFile + ", contractHash="
-				+ contractHash + ", requestFile=" + requestFile + ", requestHash=" + requestHash + ", approveFile="
-				+ approveFile + ", approveHash=" + approveHash + ", agreementFile=" + agreementFile + ", agreementHash="
-				+ agreementHash + ", getCid()=" + getCid() + ", getTxid()=" + getTxid() + ", getPid()=" + getPid()
-				+ ", getRequestDT()=" + getRequestDT() + ", getRequestName()=" + getRequestName()
-				+ ", getRequestEmail()=" + getRequestEmail() + ", getApproveDT()=" + getApproveDT()
-				+ ", getApproveName()=" + getApproveName() + ", getApproveEmail()=" + getApproveEmail()
-				+ ", getContractFile()=" + getContractFile() + ", getContractHash()=" + getContractHash()
-				+ ", getRequestFile()=" + getRequestFile() + ", getRequestHash()=" + getRequestHash()
-				+ ", getApproveFile()=" + getApproveFile() + ", getApproveHash()=" + getApproveHash()
-				+ ", getAgreementFile()=" + getAgreementFile() + ", getAgreementHash()=" + getAgreementHash()
-				+ ", getClass()=" + getClass() + ", hashCode()=" + hashCode() + ", toString()=" + super.toString()
-				+ "]";
-	}
-	
-	
-	
-	
+
 
 }

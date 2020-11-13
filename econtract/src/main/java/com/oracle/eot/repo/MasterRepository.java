@@ -12,4 +12,5 @@ import com.oracle.eot.dao.Master;
 public interface MasterRepository extends JpaRepository<Master, Integer> {
 	public List<Master> findByRequestEmail(String requestEmail);
 	public List<Master> findByApproveEmail(String approveEmail);
+	public Master findByUuid(String uuid);
 }
