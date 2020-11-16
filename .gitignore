@@ -39,3 +39,4 @@ buildNumber.properties
 upload-dir/
 oci/
 Wallet/
+/econtract/

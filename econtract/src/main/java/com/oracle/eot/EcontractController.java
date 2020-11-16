@@ -125,6 +125,7 @@ public class EcontractController {
 
 		for (Master master : masterList) {
 			Item item = new Item();
+			item.setUuid(master.getUuid());
 			item.setApproveEmail(master.getApproveEmail());
 			item.setApproveName(master.getApproveName());
 			item.setCid(master.getCid());

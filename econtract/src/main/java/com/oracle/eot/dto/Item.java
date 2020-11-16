@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 
 public class Item {
 	private int cid;
+	private String uuid;
 	private String txid;
 	private String title;
 	private Timestamp dt;
@@ -15,6 +16,13 @@ public class Item {
 	}
 	public void setCid(int cid) {
 		this.cid = cid;
+	}
+	
+	public String getUuid() {
+		return uuid;
+	}
+	public void setUuid(String uuid) {
+		this.uuid = uuid;
 	}
 	public String getTxid() {
 		return txid;
@@ -48,9 +56,10 @@ public class Item {
 	}
 	@Override
 	public String toString() {
-		return "ListItem [cid=" + cid + ", txid=" + txid + ", title=" + title + ", dt=" + dt + ", approveName="
-				+ approveName + ", approveEmail=" + approveEmail + "]";
+		return "Item [cid=" + cid + ", uuid=" + uuid + ", txid=" + txid + ", title=" + title + ", dt=" + dt
+				+ ", approveName=" + approveName + ", approveEmail=" + approveEmail + "]";
 	}
+
 
 	
 	
