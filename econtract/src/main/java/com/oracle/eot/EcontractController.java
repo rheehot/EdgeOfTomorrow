@@ -5,7 +5,9 @@ import java.security.Principal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -114,7 +116,8 @@ public class EcontractController {
 	}
 
 	@GetMapping("/list")
-	public List<Item> getContractList(Principal principal) {
+	@ResponseBody
+	public Map<String, List<Item>> getContractList(Principal principal) {
 		List<Item> itemList = new ArrayList<Item>();
 
 		// 1. 사용자 정보를 가져온다.
@@ -139,20 +142,23 @@ public class EcontractController {
 			itemList.add(item);
 		}
 
-		return itemList;
+		Map<String, List<Item>> obj = new HashMap<>();
+		obj.put("lists", itemList);
+		return obj;
 
 	}
 
 	@GetMapping("/contracts")
-	public List<Master> getContracts(Principal principal) {
+	public Map<String, List<Master>> getContracts(Principal principal) {
 		// 1. 사용자 정보를 가져온다.
 		User user = getUser(principal);
 
 		// 2. 신청한 건수들
 		List<Master> list = masterRepository.findByRequestEmail(user.getEmail());
 
-		return list;
-
+		Map<String, List<Master>> obj = new HashMap<>();
+		obj.put("contracts", list);
+		return obj;
 	}
 
 	@GetMapping("/contracts/{uuid}")
@@ -300,9 +306,13 @@ public class EcontractController {
 	}
 
 	@GetMapping("/history/{uuid}")
-	public List<History> getHistory(Principal principal, @PathVariable("uuid") String uuid) {
+	@ResponseBody
+	public Map<String, List<History>> getHistory(Principal principal, @PathVariable("uuid") String uuid) {
 		List<History> historyList = historyRepository.findByUuid(uuid);
-		return historyList;
+		
+		Map<String, List<History>> obj = new HashMap<>();
+		obj.put("history", historyList);
+		return obj;
 	}
 
 	@GetMapping("/download/{filename}")
