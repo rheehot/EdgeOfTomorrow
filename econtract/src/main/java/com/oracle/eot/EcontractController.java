@@ -76,10 +76,10 @@ public class EcontractController {
 	}
 
 	@PostMapping("/login")
-	public Message login(Principal principal) {
-		System.out.println(storageService);
-		return new Message("success");
-//		return getUser(principal);
+	public User login(Principal principal) {
+//		System.out.println(storageService);
+//		return new Message("success");
+		return getUser(principal);
 	}
 
 	private User getUser(Principal principal) {
@@ -91,11 +91,11 @@ public class EcontractController {
 			throw new EotException(userid + " is not exist");
 		}
 	
-		return userOpt.get();
+//		return userOpt.get();
 		
-//		User user = userOpt.get();
-//		user.setPassword("");
-//		return user;
+		User user = userOpt.get();
+		user.setPassword("");
+		return user;
 	}
 
 	@GetMapping("/users")
