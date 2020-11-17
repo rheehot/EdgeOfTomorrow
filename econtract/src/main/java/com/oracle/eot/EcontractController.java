@@ -266,9 +266,9 @@ public class EcontractController {
 		return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. uuid= " + master.getUuid()));
 	}
 
-	@PutMapping("/contracts/{uuid}")
+	@PostMapping("/approve/{uuid}")
 	@ResponseBody
-	public ResponseEntity approveContract(Principal principal, @PathVariable("uuid") String uuid,
+	public ResponseEntity approveContract(@PathVariable("uuid") String uuid,
 			@RequestPart("approveEmail") String approveEmail, @RequestPart MultipartFile approveFile,
 			RedirectAttributes redirectAttribute) {
 
