@@ -70,6 +70,12 @@ public class EcontractController {
 	private ConvertService convertService;
 
 	@GetMapping("/")
+	public Message hello(@RequestParam(value = "message", defaultValue = "Hello") String message) {
+		System.out.println(storageService);
+		return new Message(message);
+	}
+
+
 	public Message login(@RequestParam(value = "message", defaultValue = "Hello") String message) {
 		System.out.println(storageService);
 		return new Message(message);
@@ -94,7 +100,7 @@ public class EcontractController {
 //		return userOpt.get();
 		
 		User user = userOpt.get();
-		user.setPassword("");
+//		user.setPassword("");
 		return user;
 	}
 
@@ -105,9 +111,9 @@ public class EcontractController {
 		}
 
 		List<User> userList = userRepository.findAll();
-		for(User user : userList) {
-			user.setPassword("");
-		}
+//		for(User user : userList) {
+//			user.setPassword("");
+//		}
 		return userList;
 	}
 
@@ -124,7 +130,7 @@ public class EcontractController {
 		}
 		
 		User user = userOpt.get();
-		user.setPassword("");
+//		user.setPassword("");
 		return user;
 	}
 
