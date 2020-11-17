@@ -195,7 +195,7 @@ public class EcontractController {
 	@PostMapping("/contracts")
 	@ResponseBody
 	public ResponseEntity requestContract(Principal principal, @RequestPart String title,
-			@RequestPart(value = "pid", required = false) String pid, @RequestPart String approveName,
+			@RequestPart(value = "gid", required = false) String gid, @RequestPart String approveName,
 			@RequestPart String approveEmail, @RequestPart MultipartFile contractFile,
 			@RequestPart MultipartFile requestFile, RedirectAttributes redirectAttribute) {
 
@@ -204,13 +204,13 @@ public class EcontractController {
 		// 1. 사용자 정보를 가져온다.
 		User user = getUser(principal);
 
-		if (pid == null || pid.isEmpty()) {
-			pid = uuid;
+		if (gid == null || gid.isEmpty()) {
+			gid = uuid;
 		}
 		// 2. Master 레코드를 만든다.
 		Master master = new Master();
 		master.setUuid(uuid);
-		master.setPid(pid);
+		master.setGid(gid);
 		master.setTitle(title);
 		master.setRequestName(user.getName());
 		master.setRequestEmail(user.getEmail());

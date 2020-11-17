@@ -27,7 +27,7 @@ public class Master {
 	@Column
 	private String txid;	//Blockchain Tx
 	@Column
-	private String pid;		//Property Id
+	private String gid;		//goods Id
 
 	@Column
 	private Timestamp requestDT;		//request DateTime
@@ -117,13 +117,13 @@ public class Master {
 	}
 
 
-	public String getPid() {
-		return pid;
+	public String getGid() {
+		return gid;
 	}
 
 
-	public void setPid(String pid) {
-		this.pid = pid;
+	public void setGid(String gid) {
+		this.gid = gid;
 	}
 
 
