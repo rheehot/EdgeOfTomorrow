@@ -76,9 +76,10 @@ public class EcontractController {
 	}
 
 	@PostMapping("/login")
-	public User login(Principal principal) {
+	public Message login(Principal principal) {
 		System.out.println(storageService);
-		return getUser(principal);
+		return new Message("success");
+//		return getUser(principal);
 	}
 
 	private User getUser(Principal principal) {
@@ -89,7 +90,12 @@ public class EcontractController {
 		if (!userOpt.isPresent()) {
 			throw new EotException(userid + " is not exist");
 		}
+	
 		return userOpt.get();
+		
+//		User user = userOpt.get();
+//		user.setPassword("");
+//		return user;
 	}
 
 	@GetMapping("/users")
@@ -98,7 +104,11 @@ public class EcontractController {
 			throw new EotException("you have no permission to do");
 		}
 
-		return userRepository.findAll();
+		List<User> userList = userRepository.findAll();
+		for(User user : userList) {
+			user.setPassword("");
+		}
+		return userList;
 	}
 
 	@GetMapping("/users/{userid}")
@@ -112,7 +122,10 @@ public class EcontractController {
 		if (!userOpt.isPresent()) {
 			throw new EotException(userid + " is not exist");
 		}
-		return userOpt.get();
+		
+		User user = userOpt.get();
+		user.setPassword("");
+		return user;
 	}
 
 	@GetMapping("/list")
@@ -244,7 +257,7 @@ public class EcontractController {
 		// 10. email 보내는 쪽 호출
 		makeHistory(master.getUuid(), ContractStatus.EMAIL);
 
-		return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. uuid=" + master.getUuid()));
+		return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. uuid= " + master.getUuid()));
 	}
 
 	@PutMapping("/contracts/{uuid}")
