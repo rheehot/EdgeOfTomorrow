@@ -356,13 +356,19 @@ public class EcontractController {
 		String contentType = null;
 		try {
 			contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-		} catch (IOException ex) {
+		} catch (Exception ex) {
 			contentType = "application/octet-stream";
 		}
 
+		String type = null;
+		if(resource.getFilename().endsWith("pdf") || resource.getFilename().endsWith("PDF")) {
+			type = "attachment; filename=\"" + resource.getFilename() + "\"";
+		}else {
+			type = "inline";
+		}
 		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
 				//.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-				.header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+				.header(HttpHeaders.CONTENT_DISPOSITION, type)
 				.body(resource);
 
 	}
