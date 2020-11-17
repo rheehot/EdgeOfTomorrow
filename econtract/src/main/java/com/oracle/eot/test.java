@@ -5,6 +5,7 @@ import java.util.Arrays;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.client.RestTemplate;
 
 public class test {
 	public static void main(String args[]) {
@@ -18,6 +19,6 @@ public class test {
 		byte[] randomBytes = new byte[64];
 		sr.nextBytes(randomBytes);
 		System.out.println(Arrays.toString(randomBytes));
-		
+
 	}
 }
