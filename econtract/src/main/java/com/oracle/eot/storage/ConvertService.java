@@ -110,7 +110,7 @@ public class ConvertService {
 			String copyedRequestFile = copyToLocation(master.getRequestFile());
 			String copyedApproveFile = copyToLocation(master.getApproveFile());
 
-			String agreementFile = "final.pdf";
+			String agreementFile = "agreement.pdf";
 			File outFilename = new File(this.fileLocation.toString(), agreementFile);
 
 			// 도큐먼트 생성

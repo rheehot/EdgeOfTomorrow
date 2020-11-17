@@ -228,14 +228,14 @@ public class EcontractController {
 		String prefix = null;
 
 		// 3. contractFile을 ObjectStorage에 저장한다.
-		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-contract-";
-		String contractObj = storageService.store(prefix, contractFile);
+		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-origin-";
+		String contractObj = storageService.store(prefix, "contract.jpg", contractFile);
 		master.setContractFile(contractObj);
 		System.out.println("contractFile-->" + contractObj);
 
 		// 4. requestFile을 ObjectStorage에 저장한다.
 		prefix = Integer.toString(master.getCid()) + "-" + uuid + "-" + master.getRequestEmail() + "-";
-		String requestObj = storageService.store(prefix, requestFile);
+		String requestObj = storageService.store(prefix, "request.jpg", requestFile);
 		master.setRequestFile(requestObj);
 		System.out.println("requestFile-->" + requestObj);
 
@@ -289,7 +289,7 @@ public class EcontractController {
 
 		// 4. approveFile을 ObjectStorage에 저장한다.
 		prefix = Integer.toString(master.getCid()) + "-" + master.getUuid() + "-" + master.getApproveEmail() + "-";
-		String approveObj = storageService.store(prefix, approveFile);
+		String approveObj = storageService.store(prefix, "approve.jpg", approveFile);
 		master.setApproveFile(approveObj);
 		System.out.println("approveFile-->" + approveObj);
 
@@ -298,7 +298,7 @@ public class EcontractController {
 		agreementFile = convertService.convertToPdf(master);
 
 		// 6. pdfFile을 ObjectStorage에 저장한다.
-		prefix = Integer.toString(master.getCid()) + "-" + master.getUuid() + "-agreement-";
+		prefix = Integer.toString(master.getCid()) + "-" + master.getUuid() + "-final-";
 		String agreementObj = storageService.store(prefix, agreementFile);
 		master.setAgreementFile(agreementObj);
 		System.out.println("setAgreementFile-->" + agreementObj);

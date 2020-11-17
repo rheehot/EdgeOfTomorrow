@@ -32,7 +32,12 @@ public class FileSystemStorageService implements StorageService {
 	
 	@Override
 	public String store(String prefix, MultipartFile file) {
-		String outFilename = prefix + file.getOriginalFilename();
+		return store("", file.getOriginalFilename(), file);
+	}
+	
+	@Override
+	public String store(String prefix, String filename, MultipartFile file) {
+		String outFilename = prefix + filename;
 		try {
 			if (file.isEmpty()) {
 				throw new StorageException("Failed to store empty file " + file.getOriginalFilename());
@@ -41,7 +46,7 @@ public class FileSystemStorageService implements StorageService {
 			
 			return outFilename;
 		} catch (IOException e) {
-			throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
+			throw new StorageException("Failed to store file " + outFilename, e);
 		}
 	}
 	

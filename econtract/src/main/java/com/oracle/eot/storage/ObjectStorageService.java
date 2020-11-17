@@ -78,7 +78,12 @@ public class ObjectStorageService implements StorageService {
 	
 	@Override
 	public String store(String prefix, MultipartFile file) {
-		String objectName = prefix + file.getOriginalFilename();
+		return store("", file.getOriginalFilename(), file);
+	}
+	
+	@Override
+	public String store(String prefix, String filename, MultipartFile file) {
+		String objectName = prefix + filename;
 		try {
 
 			if (file.isEmpty()) {
@@ -116,7 +121,7 @@ public class ObjectStorageService implements StorageService {
 			
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new StorageException("Failed to store file " + file.getOriginalFilename(), e);
+			throw new StorageException("Failed to store file " + objectName, e);
 		}
 	}
 
