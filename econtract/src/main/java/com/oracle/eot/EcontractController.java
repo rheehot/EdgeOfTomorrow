@@ -75,7 +75,6 @@ public class EcontractController {
 		return new Message(message);
 	}
 
-
 	public Message login(@RequestParam(value = "message", defaultValue = "Hello") String message) {
 		System.out.println(storageService);
 		return new Message(message);
@@ -96,9 +95,9 @@ public class EcontractController {
 		if (!userOpt.isPresent()) {
 			throw new EotException(userid + " is not exist");
 		}
-	
+
 //		return userOpt.get();
-		
+
 		User user = userOpt.get();
 //		user.setPassword("");
 		return user;
@@ -128,7 +127,7 @@ public class EcontractController {
 		if (!userOpt.isPresent()) {
 			throw new EotException(userid + " is not exist");
 		}
-		
+
 		User user = userOpt.get();
 //		user.setPassword("");
 		return user;
@@ -157,9 +156,8 @@ public class EcontractController {
 				item.setDt(master.getRequestDT());
 			item.setTitle(master.getTitle());
 			item.setTxid(master.getTxid());
-			
+
 			item.setState(getFinalState(master.getUuid()));
-			
 
 			itemList.add(item);
 		}
@@ -175,15 +173,14 @@ public class EcontractController {
 		History finalHistory = new History();
 		finalHistory.setId(0);
 		finalHistory.setStatus("not exist");
-		for(History history : historyList) {
-			if(finalHistory.getId() < history.getId()) {
+		for (History history : historyList) {
+			if (finalHistory.getId() < history.getId()) {
 				finalHistory = history;
 			}
 		}
 		return finalHistory.getStatus();
 	}
-	
-	
+
 	@GetMapping("/contracts")
 	public Map<String, List<Master>> getContracts(Principal principal) {
 		// 1. 사용자 정보를 가져온다.
@@ -279,11 +276,10 @@ public class EcontractController {
 		masterRepository.save(master);
 		makeHistory(master.getUuid(), ContractStatus.REQUEST);
 
-		
 		// 9. email 보내기
-		//TODO
-		//이메일 보내기
-		
+		// TODO
+		// 이메일 보내기
+
 		// 10. email 보내는 쪽 호출 & 히스토리
 		master.setStatus(getStatus(ContractStatus.EMAIL));
 		masterRepository.save(master);
@@ -344,11 +340,9 @@ public class EcontractController {
 		master.setStatus(getStatus(ContractStatus.APPROVE));
 		masterRepository.save(master);
 		makeHistory(master.getUuid(), ContractStatus.APPROVE);
-		
-		
-		//TODO 다른 일 있나? 할것.. 메일 보낼까??
-		
-		
+
+		// TODO 다른 일 있나? 할것.. 메일 보낼까??
+
 		// 11. 레코드 업데이트 & 히스토리
 		master.setStatus(getStatus(ContractStatus.DONE));
 		masterRepository.save(master);
@@ -361,34 +355,26 @@ public class EcontractController {
 	@ResponseBody
 	public Map<String, List<History>> getHistory(Principal principal, @PathVariable("uuid") String uuid) {
 		List<History> historyList = historyRepository.findByUuid(uuid);
-		
+
 		Map<String, List<History>> obj = new HashMap<>();
 		obj.put("history", historyList);
 		return obj;
 	}
 
-
 	@GetMapping("/download/{filename}")
-	public ResponseEntity<Resource> downloadThumbnail(@PathVariable("filename") String filename, HttpServletRequest request) {
+	public ResponseEntity<Resource> downloadThumbnail(@PathVariable("filename") String filename,
+			HttpServletRequest request) {
 		System.out.println("Download Thumbnail for " + filename);
 
 		try {
-			if(!convertService.isExist(filename)) {
-				convertService.copyToLocation(filename);
-				if(filename.endsWith("jpg") || filename.endsWith("JPG")) {
-					filename = convertService.makeThumbnail(filename);					
-				}
-
-			}else {
-				if(filename.endsWith("jpg") || filename.endsWith("JPG")) {
-					filename = "thumbnail-"+filename;				
-				}
+			convertService.copyToLocation(filename);
+			if (filename.endsWith("jpg") || filename.endsWith("JPG")) {
+				filename = convertService.makeThumbnail(filename);
 			}
+
 		} catch (IOException e) {
 			throw new EotException(filename + " 을 복사 할수 없습니다.", e);
 		}
-		
-		
 
 		Resource resource = convertService.loadFileAsResource(filename);
 //		System.out.println(resource);
@@ -405,15 +391,15 @@ public class EcontractController {
 		}
 
 		String type = null;
-		if(resource.getFilename().endsWith("pdf") || resource.getFilename().endsWith("PDF")) {
+		if (resource.getFilename().endsWith("pdf") || resource.getFilename().endsWith("PDF")) {
 			type = "attachment; filename=\"" + resource.getFilename() + "\"";
-		}else {
+		} else {
 			type = "inline";
 		}
 		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
-				//.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
-				.header(HttpHeaders.CONTENT_DISPOSITION, type)
-				.body(resource);
+				// .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" +
+				// resource.getFilename() + "\"")
+				.header(HttpHeaders.CONTENT_DISPOSITION, type).body(resource);
 
 	}
 
@@ -459,7 +445,6 @@ public class EcontractController {
 //
 //	}
 
-
 	private History makeHistory(String uuid, int status) {
 		History history = new History();
 		history.setUuid(uuid);
@@ -467,7 +452,7 @@ public class EcontractController {
 		history.setStatus(getStatus(status));
 		return historyRepository.save(history);
 	}
-	
+
 	private String getStatus(int status) {
 		Optional<ContractStatus> statusOpt = contractStatusRepository.findById(status);
 		if (statusOpt.isEmpty()) {
