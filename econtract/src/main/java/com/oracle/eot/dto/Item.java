@@ -10,6 +10,7 @@ public class Item {
 	private Timestamp dt;
 	private String approveName;
 	private String approveEmail;
+	private String state;
 	
 	public int getCid() {
 		return cid;
@@ -54,10 +55,21 @@ public class Item {
 	public void setApproveEmail(String approveEmail) {
 		this.approveEmail = approveEmail;
 	}
+	
+	public String getState() {
+		return state;
+	}
+	public void setState(String state) {
+		this.state = state;
+	}
 	@Override
 	public String toString() {
 		return "Item [cid=" + cid + ", uuid=" + uuid + ", txid=" + txid + ", title=" + title + ", dt=" + dt
-				+ ", approveName=" + approveName + ", approveEmail=" + approveEmail + "]";
+				+ ", approveName=" + approveName + ", approveEmail=" + approveEmail + ", state=" + state + ", getCid()="
+				+ getCid() + ", getUuid()=" + getUuid() + ", getTxid()=" + getTxid() + ", getTitle()=" + getTitle()
+				+ ", getDt()=" + getDt() + ", getApproveName()=" + getApproveName() + ", getApproveEmail()="
+				+ getApproveEmail() + ", getState()=" + getState() + ", getClass()=" + getClass() + ", hashCode()="
+				+ hashCode() + ", toString()=" + super.toString() + "]";
 	}
 
 

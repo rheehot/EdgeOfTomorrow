@@ -157,6 +157,9 @@ public class EcontractController {
 				item.setDt(master.getRequestDT());
 			item.setTitle(master.getTitle());
 			item.setTxid(master.getTxid());
+			
+			item.setState(getFinalState(master.getUuid()));
+			
 
 			itemList.add(item);
 		}
@@ -167,6 +170,20 @@ public class EcontractController {
 
 	}
 
+	private String getFinalState(String uuid) {
+		List<History> historyList = historyRepository.findByUuid(uuid);
+		History finalHistory = new History();
+		finalHistory.setId(0);
+		finalHistory.setState("not exist");
+		for(History history : historyList) {
+			if(finalHistory.getId() < history.getId()) {
+				finalHistory = history;
+			}
+		}
+		return finalHistory.getState();
+	}
+	
+	
 	@GetMapping("/contracts")
 	public Map<String, List<Master>> getContracts(Principal principal) {
 		// 1. 사용자 정보를 가져온다.
