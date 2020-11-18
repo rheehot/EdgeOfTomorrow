@@ -1,6 +1,5 @@
 package com.oracle.eot.dao;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 
 import javax.persistence.Column;
@@ -9,6 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "\"master\"")
@@ -63,6 +63,8 @@ public class Master {
 	@Column
 	private int agreementHash;
 	
+	@Column
+	private String status;
 	
 	
 	public Master() {
@@ -267,6 +269,16 @@ public class Master {
 
 	public void setAgreementHash(int agreementHash) {
 		this.agreementHash = agreementHash;
+	}
+
+
+	public String getStatus() {
+		return status;
+	}
+
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 

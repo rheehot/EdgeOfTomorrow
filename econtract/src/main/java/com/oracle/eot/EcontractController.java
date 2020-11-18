@@ -174,13 +174,13 @@ public class EcontractController {
 		List<History> historyList = historyRepository.findByUuid(uuid);
 		History finalHistory = new History();
 		finalHistory.setId(0);
-		finalHistory.setState("not exist");
+		finalHistory.setStatus("not exist");
 		for(History history : historyList) {
 			if(finalHistory.getId() < history.getId()) {
 				finalHistory = history;
 			}
 		}
-		return finalHistory.getState();
+		return finalHistory.getStatus();
 	}
 	
 	
@@ -271,13 +271,19 @@ public class EcontractController {
 		// 7. 날짜를 등록한다.
 		master.setRequestDT(Timestamp.valueOf(LocalDateTime.now()));
 
-		// 8. 레코드를 업데이트 한다.
+		// 8. 레코드를 업데이트 & 히스토리
+		master.setStatus(getStatus(ContractStatus.REQUEST));
 		masterRepository.save(master);
-
-		// 9. 히스토리 업데이트
 		makeHistory(master.getUuid(), ContractStatus.REQUEST);
 
-		// 10. email 보내는 쪽 호출
+		
+		// 9. email 보내기
+		//TODO
+		//이메일 보내기
+		
+		// 10. email 보내는 쪽 호출 & 히스토리
+		master.setStatus(getStatus(ContractStatus.EMAIL));
+		masterRepository.save(master);
 		makeHistory(master.getUuid(), ContractStatus.EMAIL);
 
 		return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. uuid= " + master.getUuid()));
@@ -331,11 +337,18 @@ public class EcontractController {
 		// 9. 날짜를 등록한다.
 		master.setApproveDT(Timestamp.valueOf(LocalDateTime.now()));
 
-		// 10. 레코드를 업데이트 한다.
+		// 10. 레코드를 업데이트 & 히스토리
+		master.setStatus(getStatus(ContractStatus.APPROVE));
 		masterRepository.save(master);
-
-		// 11. history 업데이트
 		makeHistory(master.getUuid(), ContractStatus.APPROVE);
+		
+		
+		//TODO 다른 일 있나? 할것.. 메일 보낼까??
+		
+		
+		// 11. 레코드 업데이트 & 히스토리
+		master.setStatus(getStatus(ContractStatus.DONE));
+		masterRepository.save(master);
 		makeHistory(master.getUuid(), ContractStatus.DONE);
 
 		return ResponseEntity.ok().body(new Message("계약서 승인이 완료되었습니다."));
@@ -351,20 +364,27 @@ public class EcontractController {
 		return obj;
 	}
 
-	@GetMapping("/download/{filename}")
-	public ResponseEntity<Resource> download(@PathVariable("filename") String filename, HttpServletRequest request) {
-		System.out.println("Download file " + filename);
 
-		String copyedFile;
+	@GetMapping("/download/{filename}")
+	public ResponseEntity<Resource> downloadThumbnail(@PathVariable("filename") String filename, HttpServletRequest request) {
+		System.out.println("Download Thumbnail for " + filename);
+
 		try {
-			copyedFile = convertService.copyToLocation(filename);
+			if(!convertService.isExist(filename)) {
+				convertService.copyToLocation(filename);
+				if(filename.endsWith("jpg") || filename.endsWith("JPG")) {
+					filename = convertService.makeThumbnail(filename);					
+				}
+
+			}
 		} catch (IOException e) {
 			throw new EotException(filename + " 을 복사 할수 없습니다.", e);
 		}
-		System.out.println("Copyed file " + copyedFile);
+		
+		
 
 		Resource resource = convertService.loadFileAsResource(filename);
-		System.out.println(resource);
+//		System.out.println(resource);
 		if (!resource.exists() || !resource.isReadable()) {
 			throw new EotException(filename + " 을 읽을 수 없습니다.");
 		}
@@ -390,18 +410,63 @@ public class EcontractController {
 
 	}
 
+//	
+//	
+//	@GetMapping("/download/{filename}")
+//	public ResponseEntity<Resource> download(@PathVariable("filename") String filename, HttpServletRequest request) {
+//		System.out.println("Download file " + filename);
+//
+//		try {
+//			if(!convertService.isExist(filename)) {
+//				convertService.copyToLocation(filename);
+//			}
+//		} catch (IOException e) {
+//			throw new EotException(filename + " 을 복사 할수 없습니다.", e);
+//		}
+//		
+//
+//		Resource resource = convertService.loadFileAsResource(filename);
+////		System.out.println(resource);
+//		if (!resource.exists() || !resource.isReadable()) {
+//			throw new EotException(filename + " 을 읽을 수 없습니다.");
+//		}
+//
+//		// Try to determine file's content type
+//		String contentType = null;
+//		try {
+//			contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
+//		} catch (Exception ex) {
+//			contentType = "application/octet-stream";
+//		}
+//
+//		String type = null;
+//		if(resource.getFilename().endsWith("pdf") || resource.getFilename().endsWith("PDF")) {
+//			type = "attachment; filename=\"" + resource.getFilename() + "\"";
+//		}else {
+//			type = "inline";
+//		}
+//		return ResponseEntity.ok().contentType(MediaType.parseMediaType(contentType))
+//				//.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + resource.getFilename() + "\"")
+//				.header(HttpHeaders.CONTENT_DISPOSITION, type)
+//				.body(resource);
+//
+//	}
+
 
 	private History makeHistory(String uuid, int status) {
 		History history = new History();
 		history.setUuid(uuid);
 		history.setHistoryDT(Timestamp.valueOf(LocalDateTime.now()));
-
+		history.setStatus(getStatus(status));
+		return historyRepository.save(history);
+	}
+	
+	private String getStatus(int status) {
 		Optional<ContractStatus> statusOpt = contractStatusRepository.findById(status);
 		if (statusOpt.isEmpty()) {
 			throw new EotException("status code " + status + " is not exist");
 		}
-		history.setState(statusOpt.get().getContext());
-		return historyRepository.save(history);
+		return statusOpt.get().getContext();
 	}
 
 	@ExceptionHandler(EotException.class)

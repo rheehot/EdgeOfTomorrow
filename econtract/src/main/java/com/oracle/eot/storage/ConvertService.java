@@ -1,5 +1,6 @@
 package com.oracle.eot.storage;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,7 +11,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
+
 import org.apache.commons.io.FileUtils;
+import org.imgscalr.Scalr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -87,9 +91,37 @@ public class ConvertService {
 
 	}
 
-	public Resource loadFileAsResource(String fileName) {
+	public boolean isExist(String fileName) {
+		Path filePath = this.fileLocation.resolve(fileName).normalize();
 		try {
-			Path filePath = this.fileLocation.resolve(fileName).normalize();
+			Resource resource = new UrlResource(filePath.toUri());
+			return resource.exists();
+		} catch (MalformedURLException e) {
+			return false;
+		}
+	}
+	
+	public String makeThumbnail(String fileName) {
+		Path srcFile = this.fileLocation.resolve(fileName).normalize();
+		Path desFile = this.fileLocation.resolve("thumbnail-"+fileName).normalize();
+		
+		try {
+			BufferedImage srcImg = ImageIO.read(new File(srcFile.toString()));
+			BufferedImage destImg = Scalr.resize(srcImg, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_TO_WIDTH, 1024);
+
+			File thumbFile = new File(desFile.toString()); 
+			ImageIO.write(destImg, "jpg", thumbFile);
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new StorageException(e.getMessage(), e);
+		}
+		return "thumbnail-"+fileName;
+	}
+	
+	public Resource loadFileAsResource(String fileName) {
+		Path filePath = this.fileLocation.resolve(fileName).normalize();
+		try {
 			Resource resource = new UrlResource(filePath.toUri());
 
 			if (resource.exists()) {

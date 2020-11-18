@@ -25,7 +25,7 @@ public class History {
 	private Timestamp historyDT;
 	
 	@Column
-	private String state;
+	private String status;
 
 	
 	public int getId() {
@@ -52,12 +52,12 @@ public class History {
 		this.historyDT = historyDT;
 	}
 
-	public String getState() {
-		return state;
+	public String getStatus() {
+		return status;
 	}
 
-	public void setState(String state) {
-		this.state = state;
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 }
