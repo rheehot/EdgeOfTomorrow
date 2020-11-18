@@ -110,31 +110,12 @@ public class ConvertService {
 			
 			//----
 			int maxWidth = 1440;
-			int maxHeight = 1440;
-			
-		  	Scalr.Mode mode = Scalr.Mode.AUTOMATIC ;
-		  	int maxSize = Math.min(maxWidth, maxHeight) ;
-		  	double dh = (double)srcImg.getHeight() ;
-		  	if (dh > Double.MIN_VALUE)
-		  	{
-		  		double imageAspectRatio = (double)srcImg.getWidth() / dh ;
-		      	if (maxHeight * imageAspectRatio <=  maxWidth)
-		      	{
-		      		maxSize = maxHeight ;
-		      		mode = Scalr.Mode.FIT_TO_HEIGHT ;
-		      	}
-		      	else
-		      	{
-		      		maxSize = maxWidth ;
-		      		mode = Scalr.Mode.FIT_TO_WIDTH ;
-		      	}	
-		  	}
-		  	
-		  	BufferedImage destImg =  Scalr.resize(srcImg, Scalr.Method.QUALITY, mode, maxSize, Scalr.OP_ANTIALIAS) ; 
-		  	//----
-		  	
-//			BufferedImage destImg = Scalr.resize(srcImg, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_TO_WIDTH, 1440);
 
+			int imgWidth = srcImg.getWidth();
+			if(maxWidth > imgWidth) {
+				maxWidth = imgWidth;
+			}
+			BufferedImage destImg = Scalr.resize(srcImg, Scalr.Method.AUTOMATIC, Scalr.Mode.FIT_TO_WIDTH, maxWidth);
 			File thumbFile = new File(desFile.toString()); 
 			ImageIO.write(destImg, "jpg", thumbFile);
 
