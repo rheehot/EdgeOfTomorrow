@@ -206,6 +206,9 @@ public class EcontractController {
 		Master master = masterRepository.findByUuid(uuid);
 		System.out.println(master);
 
+//		if(master == null) {
+//			return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. " + master.getUuid()));
+//		}
 		// 3. 신청자인지 비교한다.
 		if (!master.getRequestName().equals(user.getName()) || !master.getRequestEmail().equals(user.getEmail())) {
 			throw new EotException("해당 계약에 대한 요청자가 아닙니다.");
@@ -286,7 +289,7 @@ public class EcontractController {
 		masterRepository.save(master);
 		makeHistory(master.getUuid(), ContractStatus.EMAIL);
 
-		return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. uuid= " + master.getUuid()));
+		return ResponseEntity.ok().body(new Message("계약서 요청이 완료되었습니다. " + master.getUuid()));
 	}
 
 	@PostMapping("/approve/{uuid}")
@@ -376,6 +379,10 @@ public class EcontractController {
 					filename = convertService.makeThumbnail(filename);					
 				}
 
+			}else {
+				if(filename.endsWith("jpg") || filename.endsWith("JPG")) {
+					filename = "thumbnail-"+filename;				
+				}
 			}
 		} catch (IOException e) {
 			throw new EotException(filename + " 을 복사 할수 없습니다.", e);
